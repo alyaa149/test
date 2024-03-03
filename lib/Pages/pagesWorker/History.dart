@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:grad_proj/Domain/CustomNabBar.dart';
@@ -26,18 +28,7 @@ class _HistoryWorkerState extends State<HistoryWorker> {
 "Commission Fee":200,
 "emergency": true
 },
-{
-"name": "Ola Ahmed",
-"Type": "Air Conditioning Maintenance",
-"pic": "assets/images/profile.png",
-"Number": "0123456",
-"Description": "skilled and professional technician",
-"Review": "",
-"Rating": 4.4,
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":200,
-"emergency": true
-},
+
 {
 "name": "Ola Ahmed",
 "Type": "Air Conditioning Maintenance",
@@ -61,18 +52,7 @@ class _HistoryWorkerState extends State<HistoryWorker> {
 "Date": DateTime(2024, 12, 31),
 "Commission Fee":50
 },
-{
-"name": "Ola Ahmed",
-"Type": "Air Conditioning Maintenance",
-"pic": "assets/images/profile.png",
-"Number": "0123456",
-"Description": "skilled and professional technician",
-"Review": "",
-"Rating": 4.4,
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":200,
-"emergency": true
-},
+
 {
 "name": "Nagy Ahmed",
 "Type": "Refrigerator Maintenance",
@@ -145,102 +125,103 @@ class _HistoryWorkerState extends State<HistoryWorker> {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-         appBar: CustomAppBar(scaffoldKey: _scaffoldKey,),
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              title: Text('AppBar Title'),
-              floating: true,
-              snap: true,
-            ),
-            SliverList(
-              delegate: SliverChildListDelegate(
-                [
-                  SizedBox(height: 35),
-                  Text(
-                    "Recent:",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Raleway",
-                      color: Colors.black,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black12,
-                          offset: Offset(2, 2),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomAppBar(scaffoldKey: _scaffoldKey),
+              SizedBox(height: 50,),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  "Recent:",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: "Raleway",
+                    color: Colors.black,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black12,
+                        offset: Offset(2, 2),
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
-                  ListView.builder(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: recentWorkers.length,
-                    itemBuilder: (context, itemCount) {
-                      return ListItem(
-                        worker: recentWorkers[itemCount],
-                        trailingWidget: recentWorkers[itemCount]['emergency'] == true
-                            ? Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren.png"),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren2.png"),
-                              ),
-                        onPressed: () => navigateToPage1(context, WorkerReview()),
-                        pageIndex: 3,
-                      );
-                    },
-                  ),
-                  Text(
-                    "Previous Requests:",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Raleway",
-                      color: Colors.black,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black12,
-                          offset: Offset(2, 2),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                  ListView.builder(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: previousRequests.length,
-                    itemBuilder: (context, itemCount) {
-                      return ListItem(
-                        worker: recentWorkers[itemCount],
-                        trailingWidget: recentWorkers[itemCount]['emergency'] == true
-                            ? Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren.png"),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren2.png"),
-                              ),
-                        onPressed: () => navigateToPage1(context, WorkerReview()),
-                        pageIndex: 3,
-                      );
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 10,),
+              ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: recentWorkers.length,
+                itemBuilder: (context, index) {
+                  final worker = recentWorkers[index];
+                  return ListItem(
+                    worker: worker,
+                    trailingWidget: worker['emergency'] == true
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: Image.asset("assets/images/Siren.png"),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: Image.asset("assets/images/Siren2.png"),
+                          ),
+                    onPressed: () => navigateToPage1(context, WorkerReview()),
+                    pageIndex: 3,
+                  );
+                },
+              ),
+              SizedBox(height: 50,),
+              Padding(
+                padding: const EdgeInsets.only(left:8.0),
+                child: Text(
+                  "Previous Requests:",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: "Raleway",
+                    color: Colors.black,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black12,
+                        offset: Offset(2, 2),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+                SizedBox(height: 10,),
+              ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: previousRequests.length,
+                itemBuilder: (context, index) {
+                  final worker = previousRequests[index];
+                  return ListItem(
+                    worker: worker,
+                    trailingWidget: worker['emergency'] == true
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: Image.asset("assets/images/Siren.png"),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: Image.asset("assets/images/Siren2.png"),
+                          ),
+                    onPressed: () => navigateToPage1(context, WorkerReview()),
+                    pageIndex: 3,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
+   }
 }
