@@ -11,6 +11,12 @@ void main() {
   runApp(const MyApp());
 }
 
+WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
+
 // Color(0xFFBBA2BF)
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
