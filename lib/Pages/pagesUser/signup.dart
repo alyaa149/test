@@ -1,12 +1,122 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:grad_proj/Domain/bottom.dart';
+import 'package:gradd_proj/Domain/bottom.dart';
+import 'login.dart';
 
 class SignUpUser extends StatelessWidget {
-  const SignUpUser({Key? key});
+  final bool isUser; // Add this variable to receive the isUser value
+  SignUpUser({Key? key, required this.isUser});
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  get sha256 => null;
+
+  Future<void> _registerWithEmailAndPassword(
+      String email, String password, BuildContext context) async {
+    try {
+      UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Send email verification
+      await userCredential.user!.sendEmailVerification();
+
+      // Determine the collection name based on the value of isUser
+      String collectionName = isUser ? 'users' : 'workers';
+
+      // Hash the password before storing it
+      String hashedPassword = hashPassword(password);
+
+      // Write email and password to the appropriate collection in Cloud Firestore
+      await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': email,
+        'password': password,
+        'type': isUser ? 'user' : 'worker',
+      });
+
+      // Navigate to the login screen if registration is successful
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                Login()), // Replace Login() with your login screen widget
+      );
+
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Sign Up Successful"),
+            content: Text(
+                "You have successfully signed up. Please verify your email."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      // Registration failed, display error message
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+
+
+  String hashPassword(String password) {
+    try {
+      var bytes = utf8.encode(password); // Encode the password as UTF-8
+      if (bytes.isNotEmpty) {
+        var digest = sha256.convert(bytes); // Generate the SHA-256 hash
+        return digest.toString(); // Return the hashed password as a string
+      } else {
+        throw Exception("Password cannot be empty");
+      }
+    } catch (e) {
+      print("Error hashing password: $e");
+      return ''; // Return empty string in case of error
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    String email = '';
+    String password = '';
+    String confirmPassword = ''; // Add confirmPassword variable
     return SafeArea(
       child: Scaffold(
         body: SizedBox(
@@ -70,7 +180,7 @@ class SignUpUser extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Sign Up AS USER',
+                          'Sign Up As User',
                           style: TextStyle(
                             fontFamily: "Quando",
                             color: Color.fromARGB(255, 173, 148, 177),
@@ -79,21 +189,13 @@ class SignUpUser extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Username:',
-                            style: TextStyle(
-                              fontFamily: "Quando",
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 7),
                         TextField(
+                          onChanged: (value) {
+                            email = value; // Capture email input
+                          },
                           decoration: InputDecoration(
-                            labelText: "Username",
-                            prefixIcon: Icon(Icons.person),
+                            labelText: "Email",
+                            prefixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
@@ -101,19 +203,10 @@ class SignUpUser extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Password:',
-                            style: TextStyle(
-                              fontFamily: "Quando",
-                              fontWeight: FontWeight.bold,
-
-),
-                          ),
-                        ),
-                        SizedBox(height: 7),
                         TextField(
+                          onChanged: (value) {
+                            password = value; // Capture password input
+                          },
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Password",
@@ -125,18 +218,11 @@ class SignUpUser extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Confirm Password:',
-                            style: TextStyle(
-                              fontFamily: "Quando",
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 7),
                         TextField(
+                          onChanged: (value) {
+                            confirmPassword =
+                                value; // Capture confirm password input
+                          },
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Confirm Password",
@@ -150,18 +236,17 @@ class SignUpUser extends StatelessWidget {
                         SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Sign up successful'),
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BottomNavBarUser(),
-                              ),
-                            );
+                            if (password == confirmPassword) {
+                              _registerWithEmailAndPassword(
+                                  email, password, context);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Passwords do not match'),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFBBA2BF),
@@ -181,6 +266,24 @@ class SignUpUser extends StatelessWidget {
                             ),
                           ),
                         ),
+                        SizedBox(height: 5,),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => Login()),
+                            );
+                          },
+                          child: Text(
+                            'Already have an account? Login',
+                            style: TextStyle(
+                              fontFamily: "Raleway",
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
                         SizedBox(height: 5),
                         // Sign up with Facebook or Google
                         Row(
@@ -194,12 +297,28 @@ class SignUpUser extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SvgPicture.asset(
-                              'assets/images/facebook.svg',
-                              width: 30,
-                              height: 30,
+                            GestureDetector(
+                              onTap: () async{
+                                try{
+                                  final LoginResult result = await FacebookAuth.instance.login();
 
-color: Color.fromARGB(255, 173, 148, 177),
+                                  if(result != null){
+                                    final userData = await FacebookAuth.instance.getUserData();
+                                    print('Facebook Sign-up successful: $userData');
+                                  }
+                                  else{
+                                    print('Facebook sign-up faild');
+                                  }
+                                } catch (e) {
+                                  print('error signing up : $e');
+                                }
+                              },
+                              child: SvgPicture.asset(
+                                'assets/images/facebook.svg',
+                                width: 30,
+                                height: 30,
+                                color: Color.fromARGB(255, 173, 148, 177),
+                              ),
                             ),
                             SvgPicture.asset(
                               'assets/images/google.svg',
