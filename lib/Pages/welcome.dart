@@ -73,7 +73,8 @@ class Welcome extends StatelessWidget {
                         height: 120,
                         child: ElevatedButton(
                           onPressed: () {
-                            userProvider.setIsUser(true);
+                           Provider.of<UserProvider>(context, listen: false).setIsUser(true);
+                            //userProvider.setIsUser(true);
                             Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpUser(isUser: true)));
                           },
                           style: ElevatedButton.styleFrom(
@@ -97,7 +98,8 @@ class Welcome extends StatelessWidget {
                         height: 120,
                         child: ElevatedButton(
                           onPressed: () {
-                            userProvider.setIsUser(true);
+                            Provider.of<UserProvider>(context, listen: false).setIsUser(false);
+                            //userProvider.setIsUser(true);
                             Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpWorker(isUser: false)));
                           },
                           style: ElevatedButton.styleFrom(
