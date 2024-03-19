@@ -1,14 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:grad_proj/Domain/WokerBottomNavBar.dart';
-import 'package:grad_proj/Domain/bottom.dart';
-import 'package:grad_proj/Domain/user_provider.dart';
+import 'package:gradd_proj/Pages/pagesUser/history.dart';
+import 'package:gradd_proj/Pages/pagesUser/reqEmergency.dart';
+import 'package:gradd_proj/Pages/pagesUser/userinfo.dart';
+import 'package:gradd_proj/Pages/pagesWorker/History.dart';
+import 'package:gradd_proj/Pages/welcome.dart';
+
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
-import 'package:grad_proj/Pages/pagesUser/history.dart';
-import 'package:grad_proj/Pages/pagesUser/reqEmergency.dart';
-import 'package:grad_proj/Pages/pagesUser/userinfo.dart';
-import 'package:grad_proj/Pages/welcome.dart';
+
 import 'package:provider/provider.dart';
+import '../Domain/WokerBottomNavBar.dart';
+import '../Domain/bottom.dart';
 import '../Domain/customAppBar.dart';
+import '../Domain/user_provider.dart';
+import 'aboutApp.dart';
 
 class MenuDrawerPage extends StatefulWidget {
   const MenuDrawerPage({Key? key}) : super(key: key);
@@ -19,6 +25,7 @@ class MenuDrawerPage extends StatefulWidget {
 
 class _MenuDrawerPageState extends State<MenuDrawerPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +39,8 @@ class _MenuDrawerPageState extends State<MenuDrawerPage> {
 class Menu extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
-  const Menu({Key? key, required this.scaffoldKey}) : super(key: key);
+  Menu({Key? key, required this.scaffoldKey}) : super(key: key);
+  final currentUser = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +69,7 @@ class Menu extends StatelessWidget {
                     color: Color(0xFFBBA2BF),
                   ),
                   child: Container(
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircleAvatar(
@@ -70,13 +78,35 @@ class Menu extends StatelessWidget {
                               AssetImage('assets/images/profile.png'),
                         ),
                         SizedBox(height: 8),
-                        Text(
-                          'Farha Ghallab',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.black,
-                          ),
+                        StreamBuilder(
+                          stream: FirebaseFirestore.instance.collection(isUser? "users" : "workers")
+                              .doc(currentUser.currentUser!.uid) // Use currentUser's UID to fetch the document
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return CircularProgressIndicator(); // Display a loading indicator while data is being fetched
+                            }
+                            if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            }
+                            if (!snapshot.hasData || !snapshot.data!.exists) {
+                              return Text('User data not found');
+                            }
+
+                            // Once data is available, extract the username from the snapshot
+                            Map<String, dynamic> userData = snapshot.data!.data() as Map<String, dynamic>;
+                            String username = userData['username'];
+
+                            return Text(
+                              username,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.black,
+                              ),
+                            );
+                          },
                         ),
+
                       ],
                     ),
                   ),
@@ -88,8 +118,6 @@ class Menu extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 13),
                   ),
                   onTap: () {
-                
-
                     if (isUser==true) {
                       PersistentNavBarNavigator.pushNewScreen(context,
                           screen: const BottomNavBarUser(), withNavBar: false);
@@ -119,6 +147,7 @@ class Menu extends StatelessWidget {
                   },
                 ),
                 const Divider(),
+                if(isUser)
                 ListTile(
                   leading: const Icon(Icons.calendar_month_outlined),
                   title: const Text(
@@ -130,8 +159,10 @@ class Menu extends StatelessWidget {
                         screen: History(), withNavBar: false);
                   },
                 ),
+                if(isUser)
                 const Divider(),
-                ListTile(
+                if(isUser)
+                  ListTile(
                   leading: const Icon(Icons.map_outlined),
                   title: const Text(
                     'Emergency',
@@ -140,6 +171,20 @@ class Menu extends StatelessWidget {
                   onTap: () {
                     PersistentNavBarNavigator.pushNewScreen(context,
                         screen: const ReqEmergency(), withNavBar: false);
+                  },
+                ),
+                // if(!isUser)
+                // const Divider(),
+                if(!isUser)
+                ListTile(
+                  leading: const Icon(Icons.calendar_month_outlined),
+                  title: const Text(
+                    'Appointments',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                  onTap: () {
+                    PersistentNavBarNavigator.pushNewScreen(context,
+                        screen: HistoryWorker(), withNavBar: false);
                   },
                 ),
                 const Divider(),
@@ -164,10 +209,7 @@ class Menu extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 13),
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SettingsPage()),
-                    );
+                    // Handle settings tap
                   },
                 ),
                 const Divider(),
@@ -179,10 +221,33 @@ class Menu extends StatelessWidget {
                       backgroundColor: Colors.white,
                     ),
                     child: const Text('Log Out'),
-                    onPressed: () {
-                      PersistentNavBarNavigator.pushNewScreen(context,
-                          screen: const Welcome(), withNavBar: false);
-                    },
+                      onPressed: () async {
+                        try {
+                          await FirebaseAuth.instance.signOut();
+                          // Navigate to the welcome screen after successful logout
+                          PersistentNavBarNavigator.pushNewScreen(context, screen: const Welcome(), withNavBar: false);
+                          return showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text("Log out Successful"),
+                                content: Text("You have successfully logged out."),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text("OK"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } catch (e) {
+                          print('Error logging out: $e');
+                          // Handle any errors that occur during logout
+                        }
+                      },
                   ),
                 ),
               ],
