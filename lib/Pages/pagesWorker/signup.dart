@@ -5,23 +5,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gradd_proj/Pages/pagesWorker/login.dart';
-import 'package:gradd_proj/Pages/pagesWorker/workerRequest.dart';
-
-import '../../Domain/WokerBottomNavBar.dart';
 
 class SignUpWorker extends StatelessWidget {
   SignUpWorker({Key? key, required this.isUser});
-
   final bool isUser; // Add this variable to receive the isUser value
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController(); // Add TextEditingController for username
 
   get sha256 => null;
 
   Future<void> _registerWithEmailAndPassword(
-      String email, String password, BuildContext context) async {
+      String email, String password,String username, BuildContext context) async {
     try {
       UserCredential userCredential =
       await _auth.createUserWithEmailAndPassword(
@@ -44,6 +41,7 @@ class SignUpWorker extends StatelessWidget {
           .doc(userCredential.user!.uid)
           .set({
         'email': email,
+        'username' : username,
         'password': password,
         'type': isUser ? 'user' : 'worker',
       });
@@ -116,6 +114,7 @@ class SignUpWorker extends StatelessWidget {
     String email = '';
     String password = '';
     String confirmPassword = '';
+    String username = '';
     return SafeArea(
       child: Scaffold(
         body: SizedBox(
@@ -204,6 +203,20 @@ class SignUpWorker extends StatelessWidget {
                         SizedBox(height: 16),
                         TextField(
                           onChanged: (value) {
+                            username = value; // Capture username input
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Username",
+                            prefixIcon: Icon(Icons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        TextField(
+                          onChanged: (value) {
                             password = value; // Capture password input
                           },
                           obscureText: true,
@@ -237,7 +250,7 @@ class SignUpWorker extends StatelessWidget {
                           onPressed: () {
                             if (password == confirmPassword) {
                               _registerWithEmailAndPassword(
-                                  email, password, context);
+                                  email, password, username, context);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
