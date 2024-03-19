@@ -19,6 +19,13 @@ class LoginWorker extends StatelessWidget {
         password: _passwordController.text.trim(),
       );
 
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                BottomNavBarWorker()), // Replace HomeScreen() with your home screen widget
+      );
+
       // Show a dialog prompt for successful login
       return showDialog(
         context: context,
