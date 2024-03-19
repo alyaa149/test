@@ -1,15 +1,121 @@
+import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:grad_proj/Domain/WokerBottomNavBar.dart';
-import 'package:grad_proj/Domain/bottom.dart';
-import 'package:grad_proj/Pages/pagesWorker/workerRequest.dart';
+import 'package:gradd_proj/Pages/pagesWorker/login.dart';
+import 'package:gradd_proj/Pages/pagesWorker/workerRequest.dart';
+
+import '../../Domain/WokerBottomNavBar.dart';
 
 class SignUpWorker extends StatelessWidget {
-  const SignUpWorker({Key? key});
+  SignUpWorker({Key? key, required this.isUser});
+
+  final bool isUser; // Add this variable to receive the isUser value
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  get sha256 => null;
+
+  Future<void> _registerWithEmailAndPassword(
+      String email, String password, BuildContext context) async {
+    try {
+      UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Send email verification
+      await userCredential.user!.sendEmailVerification();
+
+      // Determine the collection name based on the value of isUser
+      String collectionName = isUser ? 'users' : 'workers';
+
+      // Hash the password before storing it
+      String hashedPassword = hashPassword(password);
+
+      // Write email and password to the appropriate collection in Cloud Firestore
+      await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': email,
+        'password': password,
+        'type': isUser ? 'user' : 'worker',
+      });
+
+      // Navigate to the login screen if registration is successful
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                LoginWorker()), // Replace Login() with your login screen widget
+      );
+
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Sign Up Successful"),
+            content: Text(
+                "You have successfully signed up. Please verify your email."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      // Registration failed, display error message
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  String hashPassword(String password) {
+    try {
+      var bytes = utf8.encode(password); // Encode the password as UTF-8
+      if (bytes.isNotEmpty) {
+        var digest = sha256.convert(bytes); // Generate the SHA-256 hash
+        return digest.toString(); // Return the hashed password as a string
+      } else {
+        throw Exception("Password cannot be empty");
+      }
+    } catch (e) {
+      print("Error hashing password: $e");
+      return ''; // Return empty string in case of error
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    String email = '';
+    String password = '';
+    String confirmPassword = '';
     return SafeArea(
       child: Scaffold(
         body: SizedBox(
@@ -73,7 +179,7 @@ class SignUpWorker extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Sign Up AS Worker',
+                          'Sign Up As Worker',
                           style: TextStyle(
                             fontFamily: "Quando",
                             color: Color.fromARGB(255, 173, 148, 177),
@@ -82,21 +188,13 @@ class SignUpWorker extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Username:',
-                            style: TextStyle(
-                              fontFamily: "Quando",
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 7),
                         TextField(
+                          onChanged: (value) {
+                            email = value; // Capture email input
+                          },
                           decoration: InputDecoration(
-                            labelText: "Username",
-                            prefixIcon: Icon(Icons.person),
+                            labelText: "Email",
+                            prefixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
@@ -104,20 +202,10 @@ class SignUpWorker extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Password:',
-                            style: TextStyle(
-                              fontFamily: "Quando",
-                              fontWeight: FontWeight.bold,
-
-
-),
-                          ),
-                        ),
-                        SizedBox(height: 7),
                         TextField(
+                          onChanged: (value) {
+                            password = value; // Capture password input
+                          },
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Password",
@@ -129,18 +217,11 @@ class SignUpWorker extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Confirm Password:',
-                            style: TextStyle(
-                              fontFamily: "Quando",
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 7),
                         TextField(
+                          onChanged: (value) {
+                            confirmPassword =
+                                value; // Capture confirm password input
+                          },
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Confirm Password",
@@ -154,13 +235,17 @@ class SignUpWorker extends StatelessWidget {
                         SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () {
-                           
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => WorkerRequest(),
-                              ),
-                            );
+                            if (password == confirmPassword) {
+                              _registerWithEmailAndPassword(
+                                  email, password, context);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Passwords do not match'),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFBBA2BF),
@@ -177,6 +262,27 @@ class SignUpWorker extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 17,
                               color: Colors.grey[850],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginWorker()),
+                            );
+                          },
+                          child: Text(
+                            'Already have an account? Login',
+                            style: TextStyle(
+                              fontFamily: "Raleway",
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
@@ -197,9 +303,7 @@ class SignUpWorker extends StatelessWidget {
                               'assets/images/facebook.svg',
                               width: 30,
                               height: 30,
-
-
-color: Color.fromARGB(255, 173, 148, 177),
+                              color: Color.fromARGB(255, 173, 148, 177),
                             ),
                             SvgPicture.asset(
                               'assets/images/google.svg',
