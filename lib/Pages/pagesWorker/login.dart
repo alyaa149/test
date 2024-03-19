@@ -1,14 +1,48 @@
-// ignore_for_file: prefer_const_constructors
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:grad_proj/Pages/pagesWorker/signup.dart';
-
-
-import '../../Domain/WokerBottomNavBar.dart';
+import 'package:gradd_proj/Domain/WokerBottomNavBar.dart';
+import 'package:gradd_proj/Pages/pagesWorker/home.dart';
 
 class LoginWorker extends StatelessWidget {
-  const LoginWorker({super.key});
+  LoginWorker({super.key});
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> _signInWithEmailAndPassword(BuildContext context) async {
+    try {
+      final UserCredential userCredential =
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Show a dialog prompt for successful login
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Login Successful"),
+            content: Text("You have successfully logged in."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+
+    } catch (e) {
+      // Handle login errors, you can show a snackbar or dialog here
+      print('Failed to sign in with email and password: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +101,7 @@ class LoginWorker extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'LOGIN AS WORKER',
+                          'Login As Worker',
                           style: TextStyle(
                             fontFamily: "Quando",
                             color: Color.fromARGB(255, 173, 148, 177),
@@ -79,7 +113,7 @@ class LoginWorker extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Username:',
+                            'Email:',
                             style: TextStyle(
                               fontFamily: "Quando",
                               fontWeight: FontWeight.bold,
@@ -88,8 +122,9 @@ class LoginWorker extends StatelessWidget {
                         ),
                         SizedBox(height: 7),
                         TextField(
+                          controller: _emailController,
                           decoration: InputDecoration(
-                            labelText: "Username",
+                            labelText: "Email",
                             prefixIcon: Icon(Icons.person),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
@@ -110,6 +145,7 @@ class LoginWorker extends StatelessWidget {
                         ),
                         SizedBox(height: 7),
                         TextField(
+                          controller: _passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Password",
@@ -149,10 +185,7 @@ class LoginWorker extends StatelessWidget {
                         SizedBox(height: 5),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => BottomNavBarWorker()));
+                            _signInWithEmailAndPassword(context);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFBBA2BF),
@@ -186,11 +219,11 @@ class LoginWorker extends StatelessWidget {
                             ),
                             InkWell(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SignUpWorker()),
-                                );
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => BottomNavBarWorker()),
+                                // );
                               },
                               child: Text(
                                 'Sign up',
