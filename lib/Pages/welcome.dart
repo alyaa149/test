@@ -1,20 +1,22 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:grad_proj/Domain/user_provider.dart';
-import 'package:grad_proj/Pages/pagesUser/login.dart';
-import 'package:grad_proj/Pages/pagesWorker/login.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gradd_proj/Pages/pagesUser/login.dart';
+import 'package:gradd_proj/Pages/pagesUser/signup.dart';
+import 'package:gradd_proj/Pages/pagesWorker/login.dart';
+import 'package:gradd_proj/Pages/pagesWorker/signup.dart';
 import 'package:provider/provider.dart';
+
+import '../Domain/user_provider.dart';
 
 class Welcome extends StatelessWidget {
   const Welcome({super.key});
-  
-   
 
   @override
   Widget build(BuildContext context) {
-     final userProvider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       body: SizedBox(
         width: double.infinity,
@@ -71,11 +73,8 @@ class Welcome extends StatelessWidget {
                         height: 120,
                         child: ElevatedButton(
                           onPressed: () {
-                             userProvider.setIsUser(true);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => Login()),
-                            );
+                            userProvider.setIsUser(true);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpUser(isUser: true)));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFBBA2BF),
@@ -88,7 +87,6 @@ class Welcome extends StatelessWidget {
                                 height: 50,
                               ),
                               const Text('User'),
-                              
                             ],
                           ),
                         ),
@@ -99,12 +97,8 @@ class Welcome extends StatelessWidget {
                         height: 120,
                         child: ElevatedButton(
                           onPressed: () {
-                            userProvider.setIsUser(false);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => LoginWorker()),
-                            );
+                            userProvider.setIsUser(true);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpWorker(isUser: false)));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFBBA2BF),
