@@ -1,8 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, must_be_immutable
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:grad_proj/Pages/pagesUser/workerReview.dart';
+
+
 
 
 import '../../Domain/customAppBar.dart';
@@ -11,37 +13,58 @@ import '../menu.dart';
 import 'BNavBarPages/workerslist.dart';
 
 class EmergencyResponds extends StatefulWidget {
-  const EmergencyResponds({Key? key}) : super(key: key);
+  const EmergencyResponds({super.key});
 
   @override
   _ERespondsState createState() => _ERespondsState();
 }
 
 class _ERespondsState extends State<EmergencyResponds> {
-  //const WorkersList({Key? key});
-  List worker = [
-    {
-      "name": "Mohamed Ahmed",
-      "Type": "Air Conditioning Maintenance",
-      "pic": "assets/images/profile.png",
-      "Number": "0123456",
-      "Description": "skilled and professional technician",
-      "Review": "",
-      "Rating": 4.4,
-      "Commission Fee": 500
-    },
-    {
-      "name": "Nagy Ahmed",
-      "Type": "Refrigerator Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 5.0,
-      "Number": "1237568",
-      "Description": "",
-      "Review": "",
-      "Commission Fee": 300
-    },
-  ];
+   final _firestore = FirebaseFirestore.instance;
+  final List<Map<String, dynamic>> _workerResponses = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  @override
+  void initState() {
+    super.initState();
+    _WorkerResponsesUpdates();
+  }
+
+  void _WorkerResponsesUpdates() {
+    final requestDoc = _firestore.collection('requests').doc('iAx5IJI6mjHh3sGQGU9w');
+
+    requestDoc.snapshots().listen((requestSnapshot) async {
+      if (requestSnapshot.exists) {
+        final workerResponsesRef =
+            requestSnapshot.reference.collection('workerResponses');
+
+        workerResponsesRef.snapshots().listen((workerResponsesSnapshot) async {
+          _workerResponses.clear();
+
+          for (final workerResponseDoc in workerResponsesSnapshot.docs) {
+            final workerId = workerResponseDoc.data()['worker'];
+            final commissionFee = workerResponseDoc.data()['CommissionFee'];
+
+            final workerRef = _firestore.collection('workers').doc(workerId);
+            final workerDoc = await workerRef.get();
+            final workerData = workerDoc.data() ?? {};
+
+            final workerDetails = {
+              'CommissionFee': commissionFee,
+              'First Name': workerData['First Name'],
+              'Last Name': workerData['Last Name'],
+              'Rating': workerData['Rating'].toDouble(),
+              'PhoneNumber': workerData['PhoneNumber'],
+              'Pic': workerData['Pic'],
+            };
+
+            _workerResponses.add(workerDetails);
+          }
+
+          setState(() {}); // Update UI
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,20 +75,30 @@ class _ERespondsState extends State<EmergencyResponds> {
           scaffoldKey: _scaffoldKey,
           showSearchBox: true,
         ),
-        body: SizedBox(
+        body: _workerResponses.isEmpty // Check if responses are empty
+          ? Center( // Center the content within the body
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center, // Center children vertically
+      children: [
+        CircularProgressIndicator(),
+        Text("Wait for getting responses", style: TextStyle(
+                  fontSize: 17,
+                  fontFamily: "Raleway",
+                  color: Colors.black87,
+                ),), // Adjust text as needed
+      ],
+    ),
+  )// Display loading indicator
+          :SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Stack(children: [
-             
-              SizedBox(
-                height: 35,
-              ),
-              //Text
+              //text
               Positioned(
-                top: 130,
+                top: 70,
                 left: 6,
                 child: Text(
-                  "Emergency responds:",
+                  "Choose one of the responses:",
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -81,19 +114,30 @@ class _ERespondsState extends State<EmergencyResponds> {
                   ),
                 ),
               ),
+
               //Workers List
               Positioned(
-                top: 180,
+                top: 120,
                 right: 5,
                 left: 5,
                 bottom: 0,
                 child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  scrollDirection: Axis.vertical,
-                  itemCount: worker.length,
-                  itemBuilder: (context, itemCount) {
-                    return ListItem(
-                      worker: worker[itemCount],
+                    padding: EdgeInsets.zero,
+                    scrollDirection: Axis.vertical,
+                    itemCount: _workerResponses.length,
+                    itemBuilder: (context, itemCount) {
+                     
+                        final workerResponse = _workerResponses[itemCount];
+                        return
+                         ListItem(
+                      Member: {
+                            'First Name': workerResponse['First Name'],
+                            'Last Name': workerResponse['Last Name'],
+                            'Rating': workerResponse['Rating'].toDouble(),
+                            'CommissionFee': workerResponse['CommissionFee'],
+                            'Pic': workerResponse['Pic'],
+                            'PhoneNumber': workerResponse['PhoneNumber'],
+                          },
                       trailingWidget: Padding(
                         padding: const EdgeInsets.only(right: 10),
                         child: Image.asset("assets/images/Siren.png"),
@@ -101,14 +145,18 @@ class _ERespondsState extends State<EmergencyResponds> {
                       onPressed: () => navigateToPage1(context, WorkerReview(previousPage: 'Emergency',)),
                       pageIndex: 4,
                     );
-                  },
-                ),
+                 
+                     
+                    }),
               )
             ])),
         drawer: Menu(
           scaffoldKey: _scaffoldKey,
         ),
+      
       ),
     );
   }
 }
+
+//,
