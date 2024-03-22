@@ -3,23 +3,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-
 class ListItem extends StatelessWidget {
-  final Map<String, dynamic> worker;
+  final Map<String, dynamic> Member;
 
   final int pageIndex;
   final Widget? trailingWidget;
   final Function() onPressed;
 
-
   const ListItem({
-    Key? key,
-    required this.worker,
+    super.key,
+    required this.Member,
     required this.pageIndex,
     this.trailingWidget,
     required this.onPressed,
-  
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,85 +25,123 @@ class ListItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       child: Container(
+        margin: EdgeInsets.all(1),
+        padding: EdgeInsets.all(2.0),
         decoration: BoxDecoration(
-          color: Color(0xFFEAE0E0),
-          borderRadius: BorderRadius.circular(20.0),
-          border: Border.all(
-            color: Colors.black26,
-            width: 2.0,
-          ),
+          borderRadius: BorderRadius.circular(10.0),
+          color: Colors.grey[200],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: ListTile(
           contentPadding: EdgeInsets.all(2),
           leading: SizedBox(
-            width: 65,
-            height: 55,
+            width: 60,
+            height: 100,
             child: CircleAvatar(
-              radius: 70,
-              backgroundImage: AssetImage('assets/images/profile.png'),
+              backgroundColor: Colors.purple,
+              radius: 50,
+              backgroundImage: NetworkImage(Member['Pic'] ?? ''),
             ),
           ),
-          title: Text(
-            worker['name'] ?? 'N/A',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w500,
-              fontFamily: "Raleway",
-              color: Colors.black,
-            ),
+          title: Row(
+            children: [
+              Text(
+                Member['First Name'] ?? 'N/A',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Raleway",
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Text(
+                Member['Last Name'] ?? 'N/A',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Raleway",
+                  color: Colors.black,
+                ),
+              ),
+            ],
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (shouldDisplayWorkerType)
                 Text(
-                  worker['Type'] ?? 'N/A',
+                  Member['Description'] ?? 'N/A',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontFamily: "Raleway",
                     color: Colors.black87,
                   ),
                 ),
               if (!shouldDisplayWorkerType)
-                Text(
-                  'Expected Commission Fee : ${worker['Commission Fee']}',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: "Quantico",
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black87,
+                RichText(
+                  text: TextSpan(
+                    text: 'Price : ',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: "Quantico",
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: '${Member['CommissionFee']}',
+                        style: TextStyle(
+                          // Apply your desired text style for the commission fee value
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    worker['Number'] ?? 'N/A',
+                    Member['PhoneNumber'] ?? 'N/A',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: "Raleway",
+                      fontFamily: "Quantico",
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(width: 26),
+                  SizedBox(
+                    width: 5,
+                  ),
                   RatingBar.builder(
-                    initialRating: worker['Rating'] != null
-                        ? worker['Rating'].toDouble()
-                        : 0.0,
+                    initialRating: Member['Rating'] as double? ?? 0.0,
                     minRating: 1,
                     maxRating: 5,
                     direction: Axis.horizontal,
                     allowHalfRating: true,
                     unratedColor: Colors.grey,
                     itemCount: 5,
-                    itemSize: 20.0,
+                    itemSize: 15.0,
                     itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
                     itemBuilder: (context, _) => Icon(
                       Icons.star,
                       color: Colors.amber,
                     ),
-                    onRatingUpdate: (rating) {
-                      print(rating);
-                    },
+                    // Add the ignoreGestures property set to true to disable interactivity
+                    ignoreGestures: true,
+                    onRatingUpdate: (rating) => print(
+                        rating), // Optional: Keep the update listener if needed
                   ),
                 ],
               ),
@@ -115,7 +150,6 @@ class ListItem extends StatelessWidget {
                 child: Container(
                   width: 160,
                   height: 30,
-                  
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 2),
                   decoration: BoxDecoration(
                       color: Color(0xFFBBA2BF),
@@ -126,10 +160,10 @@ class ListItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(27)),
                   child: Text(
                     "Details",
-                    textAlign: TextAlign.center,                  
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
-                      fontSize: 17,
+                      fontSize: 15,
                       color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
@@ -137,12 +171,13 @@ class ListItem extends StatelessWidget {
               ),
             ],
           ),
-          trailing: trailingWidget,
+          trailing: Container(
+              padding: EdgeInsets.only(right: 3),
+              width: 33,
+              child: trailingWidget),
           onTap: onPressed,
         ),
-     
       ),
     );
- 
   }
 }
