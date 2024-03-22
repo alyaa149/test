@@ -1,15 +1,13 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, must_be_immutable
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:grad_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../../../Domain/customAppBar.dart';
-import '../../../Domain/listItem.dart';
-import '../workerReview.dart';
+
+
 
 class Responds extends StatefulWidget {
-  const Responds({Key? key}) : super(key: key);
+  const Responds({super.key});
 
   @override
   _RespondsState createState() => _RespondsState();
@@ -17,44 +15,82 @@ class Responds extends StatefulWidget {
 
 class _RespondsState extends State<Responds> {
   //const WorkersList({Key? key});
-  List worker = [
-    {
-      "name": "Mohamed Ahmed",
-      "Type": "Air Conditioning Maintenance",
-      "pic": "assets/images/profile.png",
-      "Number": "0123456",
-      "Description": "skilled and professional technician",
-      "Review": "",
-      "Rating": 4.4
-    },
-    {
-      "name": "Nagy Ahmed",
-      "Type": "Refrigerator Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 5.0,
-      "Number": "1237568",
-      "Description": "",
-      "Review": ""
-    },
-  ];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _firestore = FirebaseFirestore.instance;
+  final List<Map<String, dynamic>> _workerResponses = [];
+  @override
+  void initState() {
+    super.initState();
+    _WorkerResponsesUpdates();
+  }
+
+  void _WorkerResponsesUpdates() {
+    final requestDoc = _firestore.collection('requests').doc('2');
+
+    requestDoc.snapshots().listen((requestSnapshot) async {
+      if (requestSnapshot.exists) {
+        final workerResponsesRef =
+            requestSnapshot.reference.collection('workerResponses');
+
+        workerResponsesRef.snapshots().listen((workerResponsesSnapshot) async {
+          _workerResponses.clear();
+
+          for (final workerResponseDoc in workerResponsesSnapshot.docs) {
+            final workerId = workerResponseDoc.data()['worker'];
+            final commissionFee = workerResponseDoc.data()['CommissionFee'];
+
+            final workerRef = _firestore.collection('workers').doc(workerId);
+            final workerDoc = await workerRef.get();
+            final workerData = workerDoc.data() ?? {};
+
+            final workerDetails = {
+              'CommissionFee': commissionFee,
+              'First Name': workerData['First Name'],
+              'Last Name': workerData['Last Name'],
+              'Rating': workerData['Rating'].toDouble(),
+              'PhoneNumber': workerData['PhoneNumber'],
+              'Pic': workerData['Pic'],
+            };
+
+            _workerResponses.add(workerDetails);
+          }
+
+          setState(() {}); // Update UI
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: CustomAppBar(scaffoldKey: _scaffoldKey,showSearchBox: true,),
-        body: SizedBox(
+        appBar: CustomAppBar(
+          scaffoldKey: _scaffoldKey,
+          showSearchBox: true,
+        ),
+        body: _workerResponses.isEmpty // Check if responses are empty
+          ? Center( // Center the content within the body
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center, // Center children vertically
+      children: [
+        CircularProgressIndicator(),
+        Text("Wait for getting responses", style: TextStyle(
+                  fontSize: 17,
+                  fontFamily: "Raleway",
+                  color: Colors.black87,
+                ),), // Adjust text as needed
+      ],
+    ),
+  )// Display loading indicator
+          :SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Stack(children: [
-             
               //text
               Positioned(
-                top: 130,
+                top: 70,
                 left: 6,
                 child: Text(
                   "Choose one of the responses:",
@@ -76,28 +112,41 @@ class _RespondsState extends State<Responds> {
 
               //Workers List
               Positioned(
-                top: 180,
+                top: 120,
                 right: 5,
                 left: 5,
                 bottom: 0,
                 child: ListView.builder(
                     padding: EdgeInsets.zero,
                     scrollDirection: Axis.vertical,
-                    itemCount: worker.length,
+                    itemCount: _workerResponses.length,
                     itemBuilder: (context, itemCount) {
-                      return ListItem(
-                        worker: worker[itemCount],
-                        pageIndex: 2,
-                         onPressed: () => navigateToPage1(context,WorkerReview(previousPage: 'Responds',)),
-                       
-                      );
+                     
+                        final workerResponse = _workerResponses[itemCount];
+                        return ListItem(
+                          Member: {
+                            'First Name': workerResponse['First Name'],
+                            'Last Name': workerResponse['Last Name'],
+                            'Rating': workerResponse['Rating'].toDouble(),
+                            'CommissionFee': workerResponse['CommissionFee'],
+                            'Pic': workerResponse['Pic'],
+                            'PhoneNumber': workerResponse['PhoneNumber'],
+                          },
+                          pageIndex: 2,
+                          onPressed: () => navigateToPage1(
+                              context,
+                              WorkerReview(
+                                previousPage: 'Responds',
+                              )),
+                        );
+                     
                     }),
               )
             ])),
+        drawer: Menu(
+          scaffoldKey: _scaffoldKey,
+        ),
       ),
     );
   }
-
-
-
 }
