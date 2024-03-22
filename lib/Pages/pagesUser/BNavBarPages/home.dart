@@ -70,7 +70,7 @@ class HomeState extends State<Home> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>  WorkersList()));
+                              builder: (context) =>  WorkersList(serviceId: document?.id ?? '')));
                     },
                     child: SingleChildScrollView(
                       child: Column(
