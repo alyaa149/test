@@ -22,10 +22,13 @@ class _FavoritesState extends State<Favorites> {
   }
 
   void fetchFavoriteWorkerIds() async {
+    final String currentUserId = await FirebaseAuth.instance.currentUser?.uid ?? "";
     const String userId = '2';
+ 
+
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(currentUserId)
         .get(); // get the specific document from users collection
 
     if (docSnapshot.exists) {
