@@ -1,66 +1,94 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, must_be_immutable
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:grad_proj/Pages/pagesUser/userinfo.dart';
 
 
-import '../../Domain/customAppBar.dart';
-import '../../Domain/listItem.dart';
-import '../menu.dart';
-import '../pagesUser/BNavBarPages/workerslist.dart';
-import 'UserReview.dart';
 
-class HomeWorker extends StatelessWidget {
-  HomeWorker({Key? key}) : super(key: key);
 
-  //const WorkersList({Key? key});
-  List User = [
-    {
-      "name": "Ola Ahmed",
-      "Type": "Air Conditioning Maintenance",
-      "pic": "assets/images/profile.png",
-      "Number": "0123456",
-      "Description": "skilled and professional technician",
-      "Review": "",
-      "Rating": 4.4,
-      "Date": DateTime(2024, 12, 31),
-      "Commission Fee": 200,
-      "emergency": false
-    },
-    {
-      "name": "Zeinab Ahmed",
-      "Type": "Refrigerator Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 5.0,
-      "Number": "1237568",
-      "Description": "",
-      "Review": "",
-      "Date": DateTime(2024, 2, 15),
-      "Commission Fee": 300,
-      "emergency": true
-    },
-    {
-      "name": "Mo'men Ahmed",
-      "Type": "Refrigerator Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 5.0,
-      "Number": "1237568",
-      "Description": "",
-      "Review": "",
-      "Date": DateTime(2024, 1, 10),
-      "Commission Fee": 400,
-      "emergency": false
-    },
-  ];
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+class HomeWorker extends StatefulWidget {
+  const HomeWorker({super.key});
+
+  @override
+  State<HomeWorker> createState() => _HomeWorkerState();
+}
+
+class _HomeWorkerState extends State<HomeWorker> {
+  final _firestore = FirebaseFirestore.instance;
+
+  List<Map<String, dynamic>> UserRequest = [];
+
+ @override
+void initState() {
+  super.initState();
+  _listenForRequestsUpdates();
+}
+
+void _listenForRequestsUpdates() {
+  final requestsRef = _firestore.collection('requests');
+  requestsRef.snapshots().listen((requestsSnapshot) async {
+    UserRequest.clear(); // Clear existing data
+
+    for (final requestDoc in requestsSnapshot.docs) {
+      final requestData = requestDoc.data() ?? {};
+
+      if (requestData.containsKey('user') && requestData.containsKey('Description')) {
+        final user = requestData['user']; // Assuming user ID is stored here
+        final description = requestData['Description'];
+        final emergency = requestData['Emergency'];
+
+        // Fetch user details from users collection
+        final userRef = _firestore.collection('users').doc(user);
+        final userSnapshot = await userRef.get();
+
+        if (userSnapshot.exists) {
+          final userData = userSnapshot.data() ?? {};
+
+          final RequestDetails = {
+            'user': user, // Keep user ID for reference
+            'Description': description,
+            'First Name': userData['First Name'],
+            'Last Name': userData['Last Name'],
+            'Rating': userData['Rating'].toDouble(), // Convert to double if needed
+            'PhoneNumber': userData['PhoneNumber'],
+            'Pic': userData['Pic'], // Add 'Pic' if available in users collection
+            'Emergency': emergency,
+          };
+
+          UserRequest.add(RequestDetails);
+        }
+      }
+    }
+
+    setState(() {}); // Update UI after processing all requests
+  });
+}
+
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
         appBar: CustomAppBar(scaffoldKey: _scaffoldKey,showSearchBox: false,),
-        body: SizedBox(
+        body:UserRequest.isEmpty // Check if responses are empty
+          ? Center( // Center the content within the body
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center, // Center children vertically
+      children: [
+        CircularProgressIndicator(),
+        Text("No requests till now", style: TextStyle(
+                  fontSize: 17,
+                  fontFamily: "Raleway",
+                  color: Colors.black87,
+                ),), // Adjust text as needed
+      ],
+    ),
+  )// Display loading indicator
+          : SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Stack(children: [
@@ -98,7 +126,7 @@ class HomeWorker extends StatelessWidget {
               ),
               //Text
               Positioned(
-                top: 60,
+                top: 70,
                 left: 6,
                 child: Text(
                   "Today Requests:",
@@ -120,18 +148,24 @@ class HomeWorker extends StatelessWidget {
 
               //Workers List
               Positioned(
-                top: 90,
+                top: 120,
                 right: 5,
                 left: 5,
                 bottom: 0,
                 child: ListView.builder(
                   padding: EdgeInsets.zero,
                   scrollDirection: Axis.vertical,
-                  itemCount: User.length,
+                  itemCount: UserRequest.length,
                   itemBuilder: (context, itemCount) {
+                     final requestDetails = UserRequest[itemCount]; 
                     return ListItem(
-                        worker: User[itemCount],
-                        trailingWidget: User[itemCount]['emergency'] == true
+                        Member: {   'First Name': requestDetails['First Name'],
+                            'Last Name': requestDetails['Last Name'],
+                            'Rating': requestDetails['Rating'].toDouble(),
+                            'Description': requestDetails['Description'],
+                            'Pic': requestDetails['Pic'],
+                            'PhoneNumber': requestDetails['PhoneNumber'],},
+                        trailingWidget: requestDetails['Emergency'] == true
                             ? Padding(
                                 padding: const EdgeInsets.only(right: 10),
                                 child: Image.asset("assets/images/Siren.png"),
@@ -140,8 +174,8 @@ class HomeWorker extends StatelessWidget {
                                 padding: const EdgeInsets.only(right: 10),
                                 child: Image.asset("assets/images/Siren2.png"),
                               ),
-                              onPressed: () => navigateToPage1(context,Cutomerinfo()),
-                        pageIndex: 5);
+                              onPressed: () => navigateToPage1(context,UserReview()),
+                        pageIndex: 1);
                   },
                 ),
               )
