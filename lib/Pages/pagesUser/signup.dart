@@ -45,6 +45,12 @@ class SignUpUser extends StatelessWidget {
         'username' : username,
         'password': password,
         'type': isUser ? 'user' : 'worker',
+             'favorites': [],
+        'PhoneNumber': '',
+        'Pic': '',
+        'Rating':5.0,
+        'First Name': "",
+         'Last Name': ""
       });
 
             Navigator.pushReplacement(
