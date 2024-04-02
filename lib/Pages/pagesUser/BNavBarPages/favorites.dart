@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../../Domain/customAppBar.dart';
+import '../../../Domain/listItem.dart';
+import '../../menu.dart';
+import '../workerReview.dart';
 
 class Favorites extends StatefulWidget {
   const Favorites({super.key});
@@ -20,10 +25,10 @@ class _FavoritesState extends State<Favorites> {
     super.initState();
     fetchFavoriteWorkerIds();
   }
-
+  String? currentUserId; 
   void fetchFavoriteWorkerIds() async {
-    final String currentUserId = await FirebaseAuth.instance.currentUser?.uid ?? "";
-    const String userId = '2';
+     currentUserId = await FirebaseAuth.instance.currentUser?.uid ?? "";
+   
  
 
     final docSnapshot = await FirebaseFirestore.instance
@@ -51,54 +56,56 @@ class _FavoritesState extends State<Favorites> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        key: _scaffoldKey,
-        appBar: CustomAppBar(
-          scaffoldKey: _scaffoldKey,
-          showSearchBox: true,
-        ),
-        body: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Stack(
-            children: [
-              // Workers List
-              Positioned(
-                top: 10,
-                right: 5,
-                left: 5,
-                bottom: 0,
-                child: _workerStream != null // Check for stream existence
-                    ? StreamBuilder<QuerySnapshot>(
-                        stream: _workerStream!,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final workers = snapshot.data!.docs.toList();
+@override
+Widget build(BuildContext context) {
+  return SafeArea(
+    child: Scaffold(
+      key: _scaffoldKey,
+      appBar: CustomAppBar(
+        scaffoldKey: _scaffoldKey,
+        showSearchBox: true,
+      ),
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          children: [
+            // Workers List
+            Positioned(
+              top: 10,
+              right: 5,
+              left: 5,
+              bottom: 0,
+              child: _workerStream != null // Check for stream existence
+                  ? StreamBuilder<QuerySnapshot>(
+                      stream: _workerStream!,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final workers = snapshot.data!.docs.toList();
+
+                          // Filter out workers whose IDs are not in favoriteWorkerIds
+                          final filteredWorkers = workers.where((doc) {
+                            final workerId = doc.id;
+                            return favoriteWorkerIds.contains(workerId);
+                          }).toList();
+
+                          if (filteredWorkers.isNotEmpty) {
                             return ListView.builder(
                               padding: EdgeInsets.zero,
                               scrollDirection: Axis.vertical,
-                              itemCount: workers.length,
+                              itemCount: filteredWorkers.length,
                               itemBuilder: (context, itemCount) {
-                                final doc = workers[itemCount];
+                                final doc = filteredWorkers[itemCount];
                                 final dynamic workerData = doc.data();
-
-                                final firstName =
-                                    workerData['First Name'] as String?;
-                                final lastName =
-                                    workerData['Last Name'] as String?;
-                                final desc =
-                                    workerData['Description'] as String?;
+                                final firstName = workerData['First Name'] as String?;
+                                final lastName = workerData['Last Name'] as String?;
+                                final desc = workerData['Description'] as String?;
                                 final pic = workerData['Pic'] as String?;
-                                final number =
-                                    workerData['PhoneNumber'] as String?;
-                                       final ratingInt = workerData['Rating'] is int ? workerData['Rating'] as int : 0;
-final rating = (ratingInt).toDouble();
+                                final number = workerData['PhoneNumber'] as String?;
+                                final ratingInt = workerData['Rating'] is int ? workerData['Rating'] as int : 0;
+                                final rating = (ratingInt).toDouble();
 
-                                if (workerData != null &&
-                                    workerData is Map<String, dynamic>) {
+                                if (workerData != null && workerData is Map<String, dynamic>) {
                                   return ListItem(
                                     Member: {
                                       'First Name': firstName ?? 'N/A',
@@ -106,11 +113,10 @@ final rating = (ratingInt).toDouble();
                                       'Description': desc ?? 'N/A',
                                       'Pic': pic ?? 'N/A',
                                       'PhoneNumber': number ?? 'N/A',
-                                       'Rating': rating,
+                                      'Rating': rating,
                                     },
                                     trailingWidget: IconButton(
-                                    
-                                         onPressed: () => toggleFavoriteWorker(doc.id),
+                                      onPressed: () => toggleFavoriteWorker(doc.id,currentUserId!),
                                       icon: Icon(
                                         favoriteWorkerIds.contains(doc.id)
                                             ? Icons.favorite
@@ -131,26 +137,41 @@ final rating = (ratingInt).toDouble();
                               },
                             );
                           } else {
-                            return const CircularProgressIndicator(); // Show loading indicator
+                            return const Center(
+                              child: Text(
+                                "No Favorite Workers Found",
+                                style: TextStyle(fontSize: 20, fontFamily: "Raleway"),
+                              ),
+                            );
                           }
-                        },
-                      )
-                    : Container(child: const Center(child: Text("No Favorite Workers Found",style: TextStyle(fontSize: 20,fontFamily: "Raleway"),)),),
-              ),
-            ],
-          ),
-        ),
-        drawer: Menu(
-          scaffoldKey: _scaffoldKey,
+                        } else {
+                          return const CircularProgressIndicator(); // Show loading indicator
+                        }
+                      },
+                    )
+                  : Container(
+                      child: const Center(
+                        child: Text(
+                          "No Favorite Workers Found",
+                          style: TextStyle(fontSize: 20, fontFamily: "Raleway"),
+                        ),
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
-    );
-  }
-  void toggleFavoriteWorker(String workerId) async {
-  const String userId = '2'; // Replace with the actual user ID
+      drawer: Menu(
+        scaffoldKey: _scaffoldKey,
+      ),
+    ),
+  );
+}
+void toggleFavoriteWorker(String workerId,String currentUserId ) async {
+
 
   setState(() {
-      if (favoriteWorkerIds.contains(workerId)) {
+    if (favoriteWorkerIds.contains(workerId)) {
       favoriteWorkerIds.remove(workerId);
     } else {
       favoriteWorkerIds.add(workerId);
@@ -159,26 +180,26 @@ final rating = (ratingInt).toDouble();
 
   try {
     await FirebaseFirestore.instance
-      .collection('users')
-      .doc(userId)
-      .update({'Favorites': favoriteWorkerIds});
+        .collection('users')
+        .doc(currentUserId)
+        .update({'Favorites': favoriteWorkerIds});
 
-     if (!favoriteWorkerIds.contains(workerId)) {
-        setState(() {
-          _workerStream = _workerStream?.where((snapshot) {
-            // Iterate through documents in the QuerySnapshot
-            for (var doc in snapshot.docs) {
-              if (doc.id != workerId) {
-                // Keep the document if it's not the one to be removed
-                return true;
-              }
+    if (!favoriteWorkerIds.contains(workerId)) {
+      setState(() {
+        _workerStream = _workerStream?.where((snapshot) {
+          // Iterate through documents in the QuerySnapshot
+          for (var doc in snapshot.docs) {
+            if (doc.id != workerId) {
+              // Keep the document if it's not the one to be removed
+              return true;
             }
-            return false; // If not found, remove from the stream
-          });
+          }
+          return false; // If not found, remove from the stream
         });
-      }
+      });
+    }
   } catch (e) {
-     // Handle any errors that occur during the update
+    // Handle any errors that occur during the update
     print('Failed to update favorites: $e');
     setState(() {
       // Revert the changes to the favoriteWorkerIds list
@@ -190,7 +211,5 @@ final rating = (ratingInt).toDouble();
     });
   }
 }
-
-
 
 }
