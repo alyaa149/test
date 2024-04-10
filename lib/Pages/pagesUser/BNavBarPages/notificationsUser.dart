@@ -2,8 +2,10 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
 import '../../../Domain/customAppBar.dart';
-import '../../menu.dart';
+import '../../Menu_pages/menu.dart';
+import '../toqaHistoryUser.dart';
 
 class Notifiction extends StatelessWidget {
   Notifiction({Key? key}) : super(key: key);
@@ -32,7 +34,6 @@ class Notifiction extends StatelessWidget {
         key: _scaffoldKey,
         appBar: CustomAppBar(
           scaffoldKey: _scaffoldKey,
-          showSearchBox: true,
         ),
         body: Stack(children: [
           //text
@@ -127,8 +128,7 @@ class Notifiction extends StatelessWidget {
                               // Add onTap callback for the clickable text
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  // Handle the onTap action here
-                                  print('Show details clicked!');
+                                  navigateToPage1(context, HistoryPage());
                                 },
                             ),
                           ],

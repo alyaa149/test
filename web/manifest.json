@@ -1,6 +1,6 @@
 {
-    "name": "grad_proj",
-    "short_name": "grad_proj",
+    "name": "gradd_proj",
+    "short_name": "gradd_proj",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

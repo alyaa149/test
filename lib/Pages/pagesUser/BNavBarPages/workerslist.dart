@@ -1,67 +1,50 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, must_be_immutable, library_private_types_in_public_api
 
+import 'dart:developer';
+import 'dart:ffi';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../Domain/customAppBar.dart';
 import '../../../Domain/listItem.dart';
-import '../../menu.dart';
+import '../../Menu_pages/menu.dart';
 import '../workerReview.dart';
 
-class WorkersList extends StatelessWidget {
-   WorkersList({Key? key}) : super(key: key);
-  
-  List worker = [
-    {
-      "name": "Seif Ahmed",
-      "Type": "Air Conditioning Maintenance",
-      "pic": "assets/images/profile.png",
-      "Number": "0123456",
-      "Description": "skilled and professional technician",
-      "Review": "",
-      "Rating": 4.4,
-        "Favorite":true
+class WorkersList extends StatefulWidget {
+  final String serviceId;
+  WorkersList({Key? key, required this.serviceId}) : super(key: key);
 
-    },
-    {
-      "name": "Nagy Ahmed",
-      "Type": "Refrigerator Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 5.0,
-      "Number": "1237568",
-      "Description": "",
-      "Review": "",
-        "Favorite":true
-      
-    },
-    {
-      "name": "Mohamed Ahmed",
-      "Type": "Air Conditioning Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 2.9,
-      "Number": "0123456",
-      "Description": "skilled and professional technician",
-      "Review": "",
-        "Favorite":false
-    },
-    {
-      "name": "Mohamed Ahmed",
-      "Type": "Air Conditioning Maintenance",
-      "pic": "assets/images/profile.png",
-      "Rating": 2.5,
-      "Number": "0123456",
-      "Description": "skilled and professional technician",
-      "Review": ""
-    },
-  ];
-   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  @override
+  State<WorkersList> createState() => _WorkersListState();
+}
+
+class _WorkersListState extends State<WorkersList> {
+  late Stream<QuerySnapshot> _workerSream;
+  
+    @override
+  void initState() {
+    super.initState();
+    final String serviceId = widget.serviceId;
+    _workerSream = FirebaseFirestore.instance
+      .collection('workers')
+      .where('Service', isEqualTo: serviceId)
+      .snapshots(includeMetadataChanges: true);
+  }
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: CustomAppBar(scaffoldKey: _scaffoldKey,showSearchBox: true,),
+        appBar: CustomAppBar(
+          scaffoldKey: _scaffoldKey,
+          showSearchBox: true,
+        ),
         body: SizedBox(
             width: double.infinity,
             height: double.infinity,
@@ -72,31 +55,75 @@ class WorkersList extends StatelessWidget {
                 right: 5,
                 left: 5,
                 bottom: 0,
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  scrollDirection: Axis.vertical,
-                  itemCount: worker.length,
-                  itemBuilder: (context, itemCount) {
-                    return ListItem(
-                      worker: worker[itemCount],
-                       pageIndex: 0,
-                        onPressed: () => navigateToPage1(context,WorkerReview()),
-                       
-                    );
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: _workerSream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final workers = snapshot.data!.docs.toList();
+
+                      return ListView.builder(
+                        padding: EdgeInsets.zero,
+                        scrollDirection: Axis.vertical,
+                        itemCount: workers.length,
+                        itemBuilder: (context, itemCount) {
+                          final doc = workers[itemCount];
+                         final workerId = doc.id;
+                          final dynamic workerData = doc.data();
+                          final firstName = workerData['First Name'] as String?;
+                          final lastName = workerData['Last Name'] as String?;
+                          final desc = workerData['Type'] as String?;
+                          final pic = workerData['Pic'] as String?;
+                          final number = workerData['PhoneNumber'] as String?;
+                           final Service = workerData['Service'] as String?;
+                          
+                            final ratingInt = workerData['Rating'] is int ? workerData['Rating'] as int : 0;
+final rating = (ratingInt).toDouble();
+
+                      
+                          if (workerData != null &&
+                              workerData is Map<String, dynamic>?) {
+                            return ListItem(
+                              Member: {
+                                'First Name': firstName ?? 'N/A',
+                                'Last Name': lastName ?? 'N/A',
+                                'Type': desc ?? 'N/A',
+                                'Pic': pic ?? 'N/A',
+                                'PhoneNumber': number ?? 'N/A',
+                                'Rating': rating,
+                                
+                              },
+                              pageIndex: 0,
+                              onPressed: () => 
+                              Navigator.push(context, MaterialPageRoute(builder: (context) =>  WorkerReview(
+                                  previousPage: 'WorkersList',
+
+                                  worker:workerData,
+                                  workerId:workerId,
+                                  serviceId: widget.serviceId,
+
+                                ),))
+                             
+                            );
+                          } else {
+                            return Container(); // Return an empty container or any other appropriate widget
+                          }
+                        },
+                      );
+                    }
+
+                    return CircularProgressIndicator(); // Show loading indicator
                   },
                 ),
-       
               )
-            ])
+            ])),
+        drawer: Menu(
+          scaffoldKey: _scaffoldKey,
         ),
-        drawer: Menu(scaffoldKey: _scaffoldKey,),
       ),
     );
   }
-
-
 }
 
-  void navigateToPage1(BuildContext context, Widget page) {
+void navigateToPage1(BuildContext context, Widget page) {
   Navigator.push(context, MaterialPageRoute(builder: (context) => page));
 }

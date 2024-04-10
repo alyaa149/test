@@ -1,13 +1,87 @@
-// ignore_for_file: prefer_const_constructors
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:the_proj_on_github/Pages/pagesWorker/signup.dart';
-
-import '../../Domain/WokerBottomNavBar.dart';
+import 'package:gradd_proj/Domain/WokerBottomNavBar.dart';
+import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
+import 'package:gradd_proj/Pages/pagesWorker/home.dart';
+import 'package:gradd_proj/Pages/pagesWorker/signup.dart';
 
 class LoginWorker extends StatelessWidget {
-  const LoginWorker({super.key});
+  LoginWorker({super.key});
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> _signInWithEmailAndPassword(BuildContext context) async {
+  try {
+    // Check if email and password are empty
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+      throw FirebaseAuthException(code: 'empty-email-password', message: 'Please enter both email and password.');
+    }
+
+    final UserCredential userCredential =
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>
+              BottomNavBarWorker()), // Replace HomeScreen() with your home screen widget
+    );
+
+    // Show a dialog prompt for successful login
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Login Successful"),
+          content: Text("You have successfully logged in."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+
+  } on FirebaseAuthException catch (e) {
+    // Handle login errors
+    String errorMessage = 'Failed to Sign in';
+    if (e.code == 'empty-email-password') {
+      errorMessage = 'Please enter both email and password.';
+    } else if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+      errorMessage = 'Invalid email or password.';
+    }
+    
+    // Show dialog with error message
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Login Failed"),
+          content: Text(errorMessage),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +125,7 @@ class LoginWorker extends StatelessWidget {
               Center(
                 child: Container(
                   width: 320,
-                  height: 500,
+                  height: 400,
                   decoration: BoxDecoration(
                     color: Color(0xFFF5F3F3),
                     borderRadius: BorderRadius.circular(20.0),
@@ -66,10 +140,10 @@ class LoginWorker extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'LOGIN AS WORKER',
+                          'Login As Worker',
                           style: TextStyle(
                             fontFamily: "Quando",
-                            color: Color.fromARGB(255, 173, 148, 177),
+                            color: Colors.black,
                             fontSize: 22,
                             fontWeight: FontWeight.w300,
                           ),
@@ -78,7 +152,7 @@ class LoginWorker extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Username:',
+                            'Email:',
                             style: TextStyle(
                               fontFamily: "Quando",
                               fontWeight: FontWeight.bold,
@@ -87,8 +161,9 @@ class LoginWorker extends StatelessWidget {
                         ),
                         SizedBox(height: 7),
                         TextField(
+                          controller: _emailController,
                           decoration: InputDecoration(
-                            labelText: "Username",
+                            labelText: "Email",
                             prefixIcon: Icon(Icons.person),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
@@ -109,6 +184,7 @@ class LoginWorker extends StatelessWidget {
                         ),
                         SizedBox(height: 7),
                         TextField(
+                          controller: _passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Password",
@@ -148,10 +224,7 @@ class LoginWorker extends StatelessWidget {
                         SizedBox(height: 5),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => BottomNavBarWorker()));
+                            _signInWithEmailAndPassword(context);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFBBA2BF),
@@ -188,7 +261,7 @@ class LoginWorker extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => SignUpWorker()),
+                                      builder: (context) => UsernamePage(isUser: false,)),
                                 );
                               },
                               child: Text(

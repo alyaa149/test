@@ -1,244 +1,181 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:grad_proj/Domain/CustomNabBar.dart';
-import 'package:grad_proj/Domain/listItem.dart';
-import 'package:grad_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
-import 'package:grad_proj/Pages/pagesUser/workerReview.dart';
-import 'package:grad_proj/Pages/pagesWorker/MenuWorker.dart';
-import 'package:grad_proj/Pages/pagesWorker/UserReview.dart';
+import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
+import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
+import '../../Domain/customAppBar.dart';
+import '../../Domain/listItem.dart';
+import '../Menu_pages/menu.dart';
 
 class HistoryWorker extends StatefulWidget {
   @override
-  _HistoryWorkerState createState() => _HistoryWorkerState();
+  State<HistoryWorker> createState() => _HistoryWorkerState();
 }
 
 class _HistoryWorkerState extends State<HistoryWorker> {
-  List<Map<String, dynamic>> worker = [
-{
-"name": "Ola Ahmed",
-"Type": "Air Conditioning Maintenance",
-"pic": "assets/images/profile.png",
-"Number": "0123456",
-"Description": "skilled and professional technician",
-"Review": "",
-"Rating": 4.4,
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":200,
-"emergency": true
-},
-{
-"name": "Ola Ahmed",
-"Type": "Air Conditioning Maintenance",
-"pic": "assets/images/profile.png",
-"Number": "0123456",
-"Description": "skilled and professional technician",
-"Review": "",
-"Rating": 4.4,
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":200,
-"emergency": true
-},
-{
-"name": "Ola Ahmed",
-"Type": "Air Conditioning Maintenance",
-"pic": "assets/images/profile.png",
-"Number": "0123456",
-"Description": "skilled and professional technician",
-"Review": "",
-"Rating": 4.4,
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":200,
-"emergency": true
-},
-{
-"name": "Nagy Ahmed",
-"Type": "Refrigerator Maintenance",
-"pic": "assets/images/profile.png",
-"Rating": 5.0,
-"Number": "1237568",
-"Description": "",
-"Review": "",
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":50
-},
-{
-"name": "Ola Ahmed",
-"Type": "Air Conditioning Maintenance",
-"pic": "assets/images/profile.png",
-"Number": "0123456",
-"Description": "skilled and professional technician",
-"Review": "",
-"Rating": 4.4,
-"Date": DateTime(2024, 12, 31),
-"Commission Fee":200,
-"emergency": true
-},
-{
-"name": "Nagy Ahmed",
-"Type": "Refrigerator Maintenance",
-"pic": "assets/images/profile.png",
-"Rating": 5.0,
-"Number": "1237568",
-"Description": "",
-"Review": "",
-"Date": DateTime(2024, 2, 15),
-"Commission Fee":50
-},
-{
-"name": "Laila Ahmed",
-"Type": "Refrigerator Maintenance",
-"pic": "assets/images/profile.png",
-"Rating": 5.0,
-"Number": "1237568",
-"Description": "",
-"Review": "",
-"Date": DateTime(2024, 1, 10),
-"Commission Fee":100
-},
-{
-"name": "Laila Ahmed",
-"Type": "Refrigerator Maintenance",
-"pic": "assets/images/profile.png",
-"Rating": 5.0,
-"Number": "1237568",
-"Description": "",
-"Review": "",
-"Date": DateTime(2024, 1, 10),
-"Commission Fee":100
-},
-{
-"name": "Laila Ahmed",
-"Type": "Refrigerator Maintenance",
-"pic": "assets/images/profile.png",
-"Rating": 5.0,
-"Number": "1237568",
-"Description": "",
-"Review": "",
-"Date": DateTime(2024, 1, 10),
-"Commission Fee":100
-},
-
-];
-  List<Map<String, dynamic>> getRecentWorkers() {
-    DateTime today = DateTime.now();
-    return worker.where((w) {
-      DateTime appointmentDate = w['Date'];
-      return appointmentDate.isAfter(today);
-    }).toList();
-  }
-
-  List<Map<String, dynamic>> getPreviousRequests() {
-    DateTime today = DateTime.now();
-    return worker.where((w) {
-      DateTime appointmentDate = w['Date'];
-      return appointmentDate.isBefore(today);
-    }).toList();
-  }
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> recentWorkers = getRecentWorkers();
-    List<Map<String, dynamic>> previousRequests = getPreviousRequests();
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
     return SafeArea(
       child: Scaffold(
-        key: _scaffoldKey,
-         appBar: CustomAppBar(scaffoldKey: _scaffoldKey,),
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              title: Text('AppBar Title'),
-              floating: true,
-              snap: true,
-            ),
-            SliverList(
-              delegate: SliverChildListDelegate(
-                [
-                  SizedBox(height: 35),
-                  Text(
-                    "Recent:",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Raleway",
-                      color: Colors.black,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black12,
-                          offset: Offset(2, 2),
-                          blurRadius: 2,
-                        ),
-                      ],
+        key: scaffoldKey,
+        appBar: CustomAppBar(
+          scaffoldKey: scaffoldKey,
+          showSearchBox: true,
+        ),
+        body: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(children: [
+            Positioned(
+              top: 70,
+              left: 6,
+              child: Text(
+                "Appointments :",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Quantico",
+                  color: Colors.black,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black12,
+                      offset: Offset(2, 2),
+                      blurRadius: 2,
                     ),
-                  ),
-                  ListView.builder(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: recentWorkers.length,
-                    itemBuilder: (context, itemCount) {
-                      return ListItem(
-                        worker: recentWorkers[itemCount],
-                        trailingWidget: recentWorkers[itemCount]['emergency'] == true
-                            ? Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren.png"),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren2.png"),
-                              ),
-                        onPressed: () => navigateToPage1(context, WorkerReview()),
-                        pageIndex: 3,
-                      );
-                    },
-                  ),
-                  Text(
-                    "Previous Requests:",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Raleway",
-                      color: Colors.black,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black12,
-                          offset: Offset(2, 2),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                  ListView.builder(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: previousRequests.length,
-                    itemBuilder: (context, itemCount) {
-                      return ListItem(
-                        worker: recentWorkers[itemCount],
-                        trailingWidget: recentWorkers[itemCount]['emergency'] == true
-                            ? Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren.png"),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Image.asset("assets/images/Siren2.png"),
-                              ),
-                        onPressed: () => navigateToPage1(context, WorkerReview()),
-                        pageIndex: 3,
-                      );
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ],
+            Positioned(
+              top: 120,
+              right: 5,
+              left: 5,
+              bottom: 0,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('appointments')
+                    .where('worker',
+                        isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    final documents = snapshot.data!.docs;
+                    if (documents.isEmpty) {
+                      return Container(
+                        child: const Center(
+                          child: Text(
+                            "No Appointments yet",
+                            style:
+                                TextStyle(fontSize: 20, fontFamily: "Raleway"),
+                          ),
+                        ),
+                      );
+                    }
+                    return ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                     
+                      itemCount: documents.length,
+                      itemBuilder: (context, index) {
+                        final appointmentDoc = documents[index];
+                        final userId = appointmentDoc.get('user');
+                        final dateTimestamp =
+                            appointmentDoc.get('Date') as Timestamp?;
+                        final time = appointmentDoc.get('Time');
+                        String date;
+                        if (dateTimestamp != null) {
+                          final dateTime = dateTimestamp.toDate();
+                          date =
+                              '${dateTime.year}-${dateTime.month}-${dateTime.day}';
+                        } else {
+                          date = 'nooooo';
+                        }
+                        final description = appointmentDoc.get('Type');
+                        final emergency = appointmentDoc.get('Emergency');
+                        String commissionFee =
+                            appointmentDoc.get('CommissionFee');
+                        final photourl = appointmentDoc.get('PhotoURL');
+                        final address = appointmentDoc.get('Address');
+
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(userId)
+                              .get(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return CircularProgressIndicator();
+                            } else if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              final firstName =
+                                  snapshot.data!.get('First Name');
+                              final lastName = snapshot.data!.get('Last Name');
+                              final pic = snapshot.data!.get('Pic');
+                              final phone =
+                                  snapshot.data!.get('PhoneNumber');
+                              final rating =
+                                  snapshot.data!.get('Rating').toDouble();
+
+                              return ListItem(
+                                Member: {
+                                  'First Name': firstName,
+                                  'Last Name': lastName,
+                                  'Pic': pic,
+                                  'PhoneNumber': phone,
+                                  'Rating': rating,
+                                  'CommissionFee': commissionFee
+                                },
+                                trailingWidget: emergency == 'true'
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: 10),
+                                        child: Image.asset(
+                                            "assets/images/Siren.png"),
+                                      )
+                                    : Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: 10),
+                                        child: Image.asset(
+                                            "assets/images/Siren2.png"),
+                                      ),
+                                onPressed: () => navigateToPage1(
+                                    context,
+                                    HistoryPage(member: {
+                                      'First Name': firstName,
+                                      'Last Name': lastName,
+                                      'Pic': pic,
+                                      'PhoneNumber': phone,
+                                      'Rating': rating,
+                                      'CommissionFee': commissionFee,
+                                      'Address': address,
+                                      'Description': description,
+                                      'Date': date,
+                                      'Time': time,
+                                      'PhotoURL': photourl,
+                                    })),
+                                pageIndex: 3,
+                              );
+                            }
+                          },
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            )
+          ]),
+        ),
+        drawer: Menu(
+          scaffoldKey: scaffoldKey,
         ),
       ),
     );

@@ -1,11 +1,11 @@
 // Remove the unused import statements
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:grad_proj/Pages/pagesUser/MenuUser.dart';
-import 'package:grad_proj/Pages/pagesWorker/History.dart';
+import '../../Domain/customAppBar.dart';
+import '../Menu_pages/menu.dart';
+import 'History.dart';
 
 
 class Workererinfo extends StatefulWidget {
@@ -16,50 +16,18 @@ class Workererinfo extends StatefulWidget {
 }
 
 class _WorkererinfoState extends State<Workererinfo> {
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: _scaffoldKey,
+        appBar: CustomAppBar(scaffoldKey: _scaffoldKey,showSearchBox: false,),
         body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Stack(
             children: [
-// Purple foreground
-              Positioned(
-                top: 0,
-                right: 0,
-                left: 0,
-                child: SvgPicture.asset(
-                  "assets/images/foregroundPurpleSmall.svg",
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-              // Menu button
-              Positioned(
-                top: 13,
-                child: IconButton(
-                  onPressed: () {
-                     Navigator.push(context, MaterialPageRoute(builder: (context) => const Menu()));
-                  },
-                  icon: const Icon(
-                    Icons.menu,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
-              ),
-
-              // Mr. house word
-              Positioned(
-                top: 15,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: SvgPicture.asset("assets/images/MR. House.svg"),
-                ),
-              ),
 
               // Profile Information Details
               Positioned(
@@ -243,7 +211,7 @@ class _WorkererinfoState extends State<Workererinfo> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>HistoryWorker ()));
+                                        builder: (context) => HistoryWorker ()));
                                 // Add your logic for the "Show Orders" button here
                               },
                               style: ElevatedButton.styleFrom(
@@ -291,6 +259,7 @@ class _WorkererinfoState extends State<Workererinfo> {
             ],
           ),
         ),
+        drawer: Menu(scaffoldKey: _scaffoldKey,),
       ),
     );
   }
@@ -313,5 +282,6 @@ class _WorkererinfoState extends State<Workererinfo> {
       size: 30,
       color: colors[index],
     );
+    
   }
 }

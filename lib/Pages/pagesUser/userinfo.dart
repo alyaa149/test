@@ -3,8 +3,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:the_proj_on_github/Pages/pagesUser/reqCategory.dart';
+
+
 import '../../Domain/customAppBar.dart';
+import '../Menu_pages/menu.dart';
 
 class Cutomerinfo extends StatefulWidget {
   const Cutomerinfo({Key? key}) : super(key: key);
@@ -207,7 +209,7 @@ class _CutomerinfoState extends State<Cutomerinfo> {
             ],
           ),
         ),
-
+ drawer: Menu(scaffoldKey: _scaffoldKey,),
         // FloatingActionButton
       ),
     );

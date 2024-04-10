@@ -1,14 +1,10 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, must_be_immutable
 
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:grad_proj/Domain/WokerBottomNavBar.dart';
-import 'package:grad_proj/Pages/pagesUser/reqCategory.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import 'package:grad_proj/Pages/pagesWorker/home.dart';
-
+import '../../Domain/WokerBottomNavBar.dart';
 
 class WorkerRequest extends StatefulWidget {
   const WorkerRequest({Key? key}) : super(key: key);
@@ -18,10 +14,8 @@ class WorkerRequest extends StatefulWidget {
 }
 
 class _WorkerRequestState extends State<WorkerRequest> {
-
-  //const WorkersList({Key? key});
-
   bool isAvailable24H = false;
+  bool _isSendingRequest = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +47,12 @@ class _WorkerRequestState extends State<WorkerRequest> {
                 ),
               ),
 
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
 
               ListView(
-                padding: EdgeInsets.symmetric(vertical: 100),
+                padding: const EdgeInsets.symmetric(vertical: 100),
                 children: [
                   FriendPost(
                     proName: 'Hi MR Mohamed!',
@@ -68,14 +62,13 @@ class _WorkerRequestState extends State<WorkerRequest> {
 
               // Add Post Fields and Button
               Positioned(
-                top: 200, // تعديل الارتفاع حسب الاحتياج
-                left: 20, // تعديل المسافة من اليسار حسب الاحتياج
+                top: 200,
+                left: 20,
                 right: 20,
-                // تعديل المسافة من اليمين حسب الاحتياج
                 child: Column(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(10),
@@ -84,7 +77,7 @@ class _WorkerRequestState extends State<WorkerRequest> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           TextFormField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               hintText: 'Describe Yourself.......',
                               border: InputBorder.none,
                             ),
@@ -94,66 +87,25 @@ class _WorkerRequestState extends State<WorkerRequest> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // القطعة المضافة بين الحقل النصي وعنصر "proName"
                     InkWell(
                       onTap: () {
                         showModalBottomSheet(
                           context: context,
                           builder: (BuildContext context) {
-                            return Container(
+                            return SizedBox(
                               height: 350,
                               child: Column(
                                 children: <Widget>[
                                   ListTile(
-                                    title: Text('Carpenters'),
+                                    title: const Text('Carpenters'),
                                     onTap: () {
                                       setState(() {});
                                       Navigator.pop(context);
                                     },
                                   ),
-                                  ListTile(
-                                    title: Text('Plumbers'),
-                                    onTap: () {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text('Electricians'),
-                                    onTap: () {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text('Painters'),
-                                    onTap: () {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text('Tilers'),
-                                    onTap: () {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text('Plastering Contractors'),
-                                    onTap: () {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text('Appliance Repair Technician'),
-                                    onTap: () {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  ),
+                                  // Add other ListTiles here
                                 ],
                               ),
                             );
@@ -162,12 +114,14 @@ class _WorkerRequestState extends State<WorkerRequest> {
                       },
                       child: Container(
                         padding:
-                            EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+
+
+const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(25),
                           border: Border.all(color: Colors.grey),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
@@ -180,7 +134,7 @@ class _WorkerRequestState extends State<WorkerRequest> {
                       ),
                     ),
 
-                    SizedBox(
+                    const SizedBox(
                       height: 50,
                     ),
                     SizedBox(
@@ -189,65 +143,56 @@ class _WorkerRequestState extends State<WorkerRequest> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           TextButton.icon(
-                            onPressed: () {},
-                            icon: Icon(Icons.photo),
-                            label: Text('Upload Your National ID card',
+                            onPressed: () async {},
+                            icon: const Icon(Icons.photo),
+                            label: const Text('Upload Your National ID card',
                                 style: TextStyle(
                                     color: Colors.black, fontSize: 18)),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
                     SizedBox(
                       width: double.infinity,
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.start, // يبدأ من اليسار
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           IconButton(
                             icon: isAvailable24H
-                                ? Icon(Icons
-                                    .check_box) // لون الأيقونة عندما يكون المتغير مختار
-                                : Icon(Icons
-                                    .check_box_outline_blank), // لون الأيقونة عندما لا يكون المتغير مختار
+                                ? const Icon(Icons.check_box)
+                                : const Icon(Icons.check_box_outline_blank),
                             onPressed: () {
                               setState(() {
                                 isAvailable24H = !isAvailable24H;
                               });
                             },
                           ),
-                          Text(
+                          const Text(
                             'Are You Available 24H',
                             style: TextStyle(
                                 fontSize: 18,
-                                color: Color.fromARGB(
-                                    255, 0, 0, 0)), // تحديد لون النص
+                                color: Color.fromARGB(255, 0, 0, 0)),
                           ),
                         ],
                       ),
                     ),
 
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Container(
-                          width: 150, // تحديد العرض حسب الحاجة
-                          height: 50, // تحديد الارتفاع حسب الحاجة
+                        SizedBox(
+                          width: 150,
+                          height: 50,
                           child: TextButton(
                             onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => 
-                                      BottomNavBarWorker()));
-                              print('Create Post button pressed');
+                              _sendRequest();
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFBBA2BF),
+                              backgroundColor: const Color(0xFFBBA2BF),
                             ), // Change button color
-                            child: Text(
+                            child: const Text(
                               'Send Request',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -263,6 +208,26 @@ class _WorkerRequestState extends State<WorkerRequest> {
                   ],
                 ),
               ),
+
+
+// Add AlertDialog here
+              _isSendingRequest
+                  ? Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: const Center(
+                        child: AlertDialog(
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 20),
+                              Text('Wait for getting the response...'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : const SizedBox(), // This SizedBox hides the AlertDialog when not needed
             ],
           ),
         ),
@@ -276,12 +241,12 @@ class _WorkerRequestState extends State<WorkerRequest> {
   }) {
     return Column(
       children: <Widget>[
-        Container(
+        SizedBox(
           width: double.infinity,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SizedBox(width: 10.0),
+              const SizedBox(width: 10.0),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,7 +254,7 @@ class _WorkerRequestState extends State<WorkerRequest> {
                     Center(
                       child: Text(
                         proName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 30.0,
                           //  fontWeight: FontWeight.bold,
                           height: 3.0,
@@ -297,7 +262,7 @@ class _WorkerRequestState extends State<WorkerRequest> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 45.0),
+                    const SizedBox(height: 45.0),
                   ],
                 ),
               ),
@@ -305,6 +270,35 @@ class _WorkerRequestState extends State<WorkerRequest> {
           ),
         ),
       ],
+    );
+  }
+
+// Function to simulate sending request
+  void _sendRequest() {
+    setState(() {
+      _isSendingRequest = true;
+    });
+    // Simulating a response after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      setState(() {
+        _isSendingRequest = false;
+      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BottomNavBarWorker()),
+      );
+    });
+  }
+
+  void showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.grey,
+      textColor: Colors.white,
+      fontSize: 16.0,
     );
   }
 }
