@@ -1,9 +1,12 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gradd_proj/Domain/bottom.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
 import 'package:gradd_proj/Pages/pagesUser/signup.dart';
+import 'package:gradd_proj/Pages/tesssssst.dart';
 import 'BNavBarPages/home.dart';
 
 class Login extends StatefulWidget {
@@ -39,24 +42,7 @@ class _LoginState extends State<Login> {
               BottomNavBarUser()), // Replace HomeScreen() with your home screen widget
     );
 
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Login Successful"),
-          content: Text("You have successfully logged in."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-
+   
   } on FirebaseAuthException catch (e) {
     // Handle login errors
     String errorMessage = 'Failed to Sign in';

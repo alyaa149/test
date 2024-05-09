@@ -54,7 +54,7 @@ class _ERespondsState extends State<EmergencyResponds> {
                  final photoURL = workerResponseDoc.data()['PhotoURL'];
                  final time = workerResponseDoc.data()['Time'];
               String currentUserId = await FirebaseAuth.instance.currentUser?.uid ?? "";
-
+final descOfproblem = workerResponseDoc.data()['Description']  ?? 'noooooo desc' ;
             final workerDetails = {
                'workerID': workerId,
               'CommissionFee': commissionFee,
@@ -63,7 +63,7 @@ class _ERespondsState extends State<EmergencyResponds> {
               'Rating': workerData['Rating'].toDouble(),
               'PhoneNumber': workerData['PhoneNumber'],
               'Pic': workerData['Pic'],
-               'Type': workerData['Type'],
+                'Type': descOfproblem,
                 'service':  workerData['Service'],
                  'Emergency':  emergency,
                'PhotoURL':  photoURL,

@@ -80,24 +80,45 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                     return ListView.builder(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
-                     
                       itemCount: documents.length,
                       itemBuilder: (context, index) {
                         final appointmentDoc = documents[index];
+                        final appointmentId = appointmentDoc.id;
                         final userId = appointmentDoc.get('user');
                         final dateTimestamp =
                             appointmentDoc.get('Date') as Timestamp?;
                         final time = appointmentDoc.get('Time');
                         String date;
+                        String day;
+                        String dayOfWeek;
+                     
+                        //String days;
                         if (dateTimestamp != null) {
                           final dateTime = dateTimestamp.toDate();
                           date =
                               '${dateTime.year}-${dateTime.month}-${dateTime.day}';
+                          final days = [
+                            'Monday',
+                            'Tuesday',
+                            'Wednesday',
+                            'Thursday',
+                            'Friday',
+                            'Saturday',
+                            'Sunday'
+                          ];
+
+                          // Get the index of the day of the week (0 for Monday, 1 for Tuesday, etc.)
+                          final dayIndex = dateTime.weekday - 1;
+                          // Get the day of the week name using the index
+                          dayOfWeek = days[dayIndex];
                         } else {
                           date = 'nooooo';
+                          dayOfWeek = 'no';// Default value if Date is null
                         }
                         final description = appointmentDoc.get('Type');
+
                         final emergency = appointmentDoc.get('Emergency');
+
                         String commissionFee =
                             appointmentDoc.get('CommissionFee');
                         final photourl = appointmentDoc.get('PhotoURL');
@@ -119,8 +140,7 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                                   snapshot.data!.get('First Name');
                               final lastName = snapshot.data!.get('Last Name');
                               final pic = snapshot.data!.get('Pic');
-                              final phone =
-                                  snapshot.data!.get('PhoneNumber');
+                              final phone = snapshot.data!.get('PhoneNumber');
                               final rating =
                                   snapshot.data!.get('Rating').toDouble();
 
@@ -133,16 +153,16 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                                   'Rating': rating,
                                   'CommissionFee': commissionFee
                                 },
-                                trailingWidget: emergency == 'true'
+                                trailingWidget: emergency == true
                                     ? Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: 10),
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
                                         child: Image.asset(
                                             "assets/images/Siren.png"),
                                       )
                                     : Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: 10),
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
                                         child: Image.asset(
                                             "assets/images/Siren2.png"),
                                       ),
@@ -160,6 +180,9 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                                       'Date': date,
                                       'Time': time,
                                       'PhotoURL': photourl,
+                                      'userId': userId,
+                                      'appointmentId': appointmentId,
+                                          'day':dayOfWeek
                                     })),
                                 pageIndex: 3,
                               );

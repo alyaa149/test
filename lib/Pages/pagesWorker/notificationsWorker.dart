@@ -2,11 +2,13 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
-import '../../Domain/customAppBar.dart';
-import '../Menu_pages/menu.dart';
-import '../pagesUser/BNavBarPages/workerslist.dart';
 
+import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
+import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
+import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
+import 'package:gradd_proj/Pages/pagesWorker/History.dart';
+
+import '../../Domain/customAppBar.dart';
 
 class alartsWorker extends StatelessWidget {
   alartsWorker({Key? key}) : super(key: key);
@@ -28,7 +30,10 @@ class alartsWorker extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: CustomAppBar(scaffoldKey: _scaffoldKey,showSearchBox: true,),
+        appBar: CustomAppBar(
+          scaffoldKey: _scaffoldKey,
+          showSearchBox: true,
+        ),
         body: Stack(
           children: [
             // Background Image
@@ -91,8 +96,8 @@ class alartsWorker extends StatelessWidget {
                       itemCount: notification1.length,
                       itemBuilder: (context, itemCount) {
                         return Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 2, vertical: 2),
                           child: Container(
                             decoration: BoxDecoration(
                               color: const Color.fromARGB(31, 125, 124, 124),
@@ -128,7 +133,8 @@ class alartsWorker extends StatelessWidget {
                                       // Add onTap callback for the clickable text
                                       recognizer: TapGestureRecognizer()
                                         ..onTap = () {
-                                         navigateToPage1(context, HistoryPage());
+                                          navigateToPage1(
+                                              context, HistoryWorker());
                                         },
                                     ),
                                   ],
@@ -153,8 +159,8 @@ class alartsWorker extends StatelessWidget {
                       itemCount: notification2.length,
                       itemBuilder: (context, itemCount) {
                         return Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 2, vertical: 2),
                           child: Container(
                             decoration: BoxDecoration(
                               color: const Color.fromARGB(31, 125, 124, 124),

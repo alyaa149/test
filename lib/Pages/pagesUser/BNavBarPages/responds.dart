@@ -62,9 +62,9 @@ void _workerResponsesUpdates() {
               'Last Name': workerData['Last Name'],
               'Rating': workerData['Rating'].toDouble(),
               'PhoneNumber': workerData['PhoneNumber'],
-              'Type': workerData['Type'],
+            
               'Date': date,
-              'Description': descOfproblem,
+              'Type': descOfproblem,
               'Pic': workerData['Pic'],
               'service': workerData['Service'],
               'Emergency': emergency,

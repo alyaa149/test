@@ -24,8 +24,8 @@ class ListItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       child: Container(
-        margin: EdgeInsets.all(1),
-        padding: EdgeInsets.all(2.0),
+        margin: EdgeInsets.all(5),
+        padding: EdgeInsets.all(1.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
           color: Colors.grey[200],
@@ -46,26 +46,28 @@ class ListItem extends StatelessWidget {
             child: CircleAvatar(
               backgroundColor: Colors.purple,
               radius: 50,
-              backgroundImage: NetworkImage(Member['Pic'] ?? ''),
+              backgroundImage: NetworkImage(
+                Member['Pic'].isEmpty
+                    ? 'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'
+                    : Member['Pic'],
+              ),
             ),
           ),
-          title:Row(
-  children: [
-    Expanded(
-      child: Text(
-        '${Member['First Name']} ${Member['Last Name']}' ?? 'N/A',
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w500,
-          fontFamily: "Quantico",
-          color: Colors.black,
-        ),
-        overflow: TextOverflow.ellipsis, // Handle overflow if necessary
-      ),
-    ),
-  ],
-),
- subtitle: Column(
+          title: Row(
+            children: [
+              Text(
+                '${Member['First Name']} ${Member['Last Name']}' ?? 'N/A',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Quantico",
+                  color: Colors.black,
+                ),
+                overflow: TextOverflow.ellipsis, // Handle overflow if necessary
+              ),
+            ],
+          ),
+          subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (shouldDisplayWorkerType)
@@ -82,7 +84,7 @@ class ListItem extends StatelessWidget {
                   text: TextSpan(
                     text: 'Price : ',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontFamily: "Quantico",
                       fontWeight: FontWeight.w400,
                       color: Colors.black87,
@@ -91,7 +93,7 @@ class ListItem extends StatelessWidget {
                       TextSpan(
                         text: '${Member['CommissionFee']}',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,
                         ),
@@ -99,20 +101,22 @@ class ListItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 5,),
+              SizedBox(
+                height: 5,
+              ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     Member['PhoneNumber'] ?? 'N/A',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontFamily: "Quantico",
                       color: Colors.black87,
                     ),
                   ),
                   SizedBox(
-                    width: 15,
+                    width: 5,
                   ),
                   RatingBar.builder(
                     initialRating: Member['Rating'] as double? ?? 0.0,
@@ -136,7 +140,7 @@ class ListItem extends StatelessWidget {
               Align(
                 alignment: Alignment.center,
                 child: Container(
-                  width: 160,
+                  width: 155,
                   height: 30,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 2),
                   decoration: BoxDecoration(
@@ -152,7 +156,7 @@ class ListItem extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
-                      fontSize: 15,
+                      fontSize: 13,
                       color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
@@ -161,8 +165,9 @@ class ListItem extends StatelessWidget {
             ],
           ),
           trailing: Container(
+           
             padding: EdgeInsets.only(right: 3),
-            width: 33,
+            width: 30,
             child: trailingWidget,
           ),
           onTap: onPressed,

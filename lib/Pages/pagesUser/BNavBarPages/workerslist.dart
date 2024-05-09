@@ -22,16 +22,17 @@ class WorkersList extends StatefulWidget {
 
 class _WorkersListState extends State<WorkersList> {
   late Stream<QuerySnapshot> _workerSream;
-  
-    @override
+
+  @override
   void initState() {
     super.initState();
     final String serviceId = widget.serviceId;
     _workerSream = FirebaseFirestore.instance
-      .collection('workers')
-      .where('Service', isEqualTo: serviceId)
-      .snapshots(includeMetadataChanges: true);
+        .collection('workers')
+        .where('Service', isEqualTo: serviceId)
+        .snapshots(includeMetadataChanges: true);
   }
+
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -67,43 +68,40 @@ class _WorkersListState extends State<WorkersList> {
                         itemCount: workers.length,
                         itemBuilder: (context, itemCount) {
                           final doc = workers[itemCount];
-                         final workerId = doc.id;
+                          final workerId = doc.id;
+                         
                           final dynamic workerData = doc.data();
                           final firstName = workerData['First Name'] as String?;
                           final lastName = workerData['Last Name'] as String?;
                           final desc = workerData['Type'] as String?;
                           final pic = workerData['Pic'] as String?;
                           final number = workerData['PhoneNumber'] as String?;
-                           final Service = workerData['Service'] as String?;
-                          
-                            final ratingInt = workerData['Rating'] is int ? workerData['Rating'] as int : 0;
-final rating = (ratingInt).toDouble();
+                          final Service = workerData['Service'] as String?;
 
-                      
+                          final rating = (workerData['Rating']).toDouble();
+
                           if (workerData != null &&
                               workerData is Map<String, dynamic>?) {
                             return ListItem(
-                              Member: {
-                                'First Name': firstName ?? 'N/A',
-                                'Last Name': lastName ?? 'N/A',
-                                'Type': desc ?? 'N/A',
-                                'Pic': pic ?? 'N/A',
-                                'PhoneNumber': number ?? 'N/A',
-                                'Rating': rating,
-                                
-                              },
-                              pageIndex: 0,
-                              onPressed: () => 
-                              Navigator.push(context, MaterialPageRoute(builder: (context) =>  WorkerReview(
-                                  previousPage: 'WorkersList',
-
-                                  worker:workerData,
-                                  workerId:workerId,
-                                  serviceId: widget.serviceId,
-
-                                ),))
-                             
-                            );
+                                Member: {
+                                  'First Name': firstName ?? 'N/A',
+                                  'Last Name': lastName ?? 'N/A',
+                                  'Type': desc ?? 'N/A',
+                                  'Pic': pic ?? 'N/A',
+                                  'PhoneNumber': number ?? 'N/A',
+                                  'Rating': rating,
+                                },
+                                pageIndex: 0,
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WorkerReview(
+                                        previousPage: 'WorkersList',
+                                        worker: workerData,
+                                        workerId: workerId,
+                                        serviceId: widget.serviceId,
+                                      ),
+                                    )));
                           } else {
                             return Container(); // Return an empty container or any other appropriate widget
                           }

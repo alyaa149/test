@@ -57,35 +57,35 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
         ],
-      ),
-      bottom: showSearchBox && onSearchTextChanged != null ? PreferredSize(
-        preferredSize: const Size.fromHeight(0),
-        child: Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(6.0),
-            child: TextField(
-              onChanged: (pattern) async {
-                if (onSearchTextChanged != null) {
-                  await onSearchTextChanged!(pattern); // Call the provided function if it's not null
-                }
-              },
-              decoration: InputDecoration(
-                labelText: 'Search for a technician...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-        ),
-      ) : null,
+      )
+    //   bottom: showSearchBox && onSearchTextChanged != null ? PreferredSize(
+    //     preferredSize: const Size.fromHeight(0),
+    //     child: Expanded(
+    //       child: Padding(
+    //         padding: const EdgeInsets.all(6.0),
+    //         child: TextField(
+    //           onChanged: (pattern) async {
+    //             if (onSearchTextChanged != null) {
+    //               await onSearchTextChanged!(pattern); // Call the provided function if it's not null
+    //             }
+    //           },
+    //           decoration: InputDecoration(
+    //             labelText: 'Search for a technician...',
+    //             border: OutlineInputBorder(),
+    //           ),
+    //         ),
+    //       ),
+    //     ),
+    //   ) : null,
     );
   }
 
   @override
   Size get preferredSize {
-    if (showSearchBox && onSearchTextChanged != null) {
-      return const Size.fromHeight(90.0);
-    } else {
+    // if (showSearchBox && onSearchTextChanged != null) {
+    //   return const Size.fromHeight(90.0);
+    // } else {
       return const Size.fromHeight(60.0);
-    }
+    // }
   }
 }

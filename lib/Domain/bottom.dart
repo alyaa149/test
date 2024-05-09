@@ -1,13 +1,21 @@
+
+
+
 import 'package:flutter/material.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+
+
+
+
+import 'package:gradd_proj/Pages/SocialMedia_pages/adminchat.dart';
+import 'package:gradd_proj/Pages/SocialMedia_pages/posts.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/favorites.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/home.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/notificationsUser.dart';
-import '../Pages/SocialMedia_pages/adminchat.dart';
-import '../Pages/pagesWorker/home.dart';
-import '../Pages/pagesWorker/notificationsWorker.dart';
-import '../Pages/SocialMedia_pages/posts.dart';
 
+
+
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+// Main Navigation Screen
 class BottomNavBarUser extends StatefulWidget {
   const BottomNavBarUser({Key? key}) : super(key: key);
 
@@ -16,56 +24,81 @@ class BottomNavBarUser extends StatefulWidget {
 }
 
 class _BottomNavBarUserState extends State<BottomNavBarUser> {
-  final _controller = PageController(initialPage: 0);
-
-  int _selectedIndex = 0;
+  final _controller = PersistentTabController(initialIndex: 0);
 
   List<Widget> screens() {
+    return  [
+       const Home(),
+       Favorites(),
+       const AdminChat(),
+       Notifiction(),
+       const Posts(),
+    ];
+  }
+
+  List<PersistentBottomNavBarItem> navBarItems() {
+    
     return [
-      const Home(),
-      Favorites(),
-      const AdminChat(),
-      Notifiction(),
-      const Posts(),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.home),
+        title: "Home",
+        activeColorPrimary: Colors.black87,
+        
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle: const TextStyle(fontSize: 10,fontWeight: FontWeight.bold),
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.favorite),
+        title: "Favorites",
+        activeColorPrimary: Colors.black87,
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle:  const TextStyle(fontSize: 15,fontWeight: FontWeight.bold),
+
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.support_agent),
+        title: "Admin Chat",
+        activeColorPrimary: Colors.black87,
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle:  const TextStyle(fontSize: 22,fontWeight: FontWeight.bold),
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.notifications),
+        title: "Notifications",
+        activeColorPrimary: Colors.black87,
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle:  const TextStyle(fontSize: 23,fontWeight: FontWeight.w900),
+      ),
+       PersistentBottomNavBarItem(
+          icon: const Icon(Icons.handshake),
+          title: "Ask",
+          iconSize: 28,
+        textStyle:  const TextStyle(fontSize: 15,fontWeight: FontWeight.w900),
+          activeColorPrimary: Colors.black87,
+          inactiveColorPrimary: Colors.white),       
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _controller,
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        children: screens(),
-      ),
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _selectedIndex,
-        height: 65,
-        color: Color(0xFFBBA2BF),
-        backgroundColor: Colors.transparent,
-        buttonBackgroundColor: Color(0xFFBBA2BF),
-        items: <Widget>[
-          Icon(Icons.home, size: 30, color: Colors.white),
-          Icon(Icons.favorite, size: 30, color: Colors.white),
-          Icon(Icons.support_agent, size: 30, color: Colors.white),
-          Icon(Icons.notifications, size: 30, color: Colors.white),
-          Icon(Icons.handshake, size: 30, color: Colors.white),
-        ],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-            _controller.animateToPage(
-              index,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeIn,
-            );
-          });
-        },
-      ),
+    return PersistentTabView(
+      context,
+      screens: screens(),
+      items: navBarItems(),
+    //  popAllScreensOnTapAnyTabs: true,
+     
+      popAllScreensOnTapOfSelectedTab: false,
+      controller: _controller,
+      navBarStyle: NavBarStyle.style1,
+      
+      backgroundColor:const Color.fromARGB(255, 173, 148, 177),   
+      hideNavigationBarWhenKeyboardShows: true,
+      resizeToAvoidBottomInset: false,   
+      
     );
   }
 }

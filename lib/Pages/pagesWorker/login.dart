@@ -4,10 +4,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:gradd_proj/Domain/WokerBottomNavBar.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
 import 'package:gradd_proj/Pages/pagesWorker/home.dart';
-import 'package:gradd_proj/Pages/pagesWorker/signup.dart';
+//import 'package:gradd_proj/Pages/pagesUser/pagesWorker/signup.dart';
 
 class LoginWorker extends StatelessWidget {
-  LoginWorker({super.key});
+   LoginWorker({super.key});
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
@@ -34,23 +34,23 @@ class LoginWorker extends StatelessWidget {
     );
 
     // Show a dialog prompt for successful login
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Login Successful"),
-          content: Text("You have successfully logged in."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
+    // return showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return AlertDialog(
+    //       title: Text("Login Successful"),
+    //       content: Text("You have successfully logged in."),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () {
+    //             Navigator.of(context).pop();
+    //           },
+    //           child: Text("OK"),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
 
   } on FirebaseAuthException catch (e) {
     // Handle login errors

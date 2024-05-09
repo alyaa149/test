@@ -3,7 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gradd_proj/Pages/Intro_pages/onboarding_screen.dart';
+
 import 'package:gradd_proj/Pages/pagesWorker/home.dart';
+import 'package:gradd_proj/Pages/Subscription_Pages/packagesPage.dart';
 import 'package:gradd_proj/Pages/splashscreen.dart';
 import 'package:gradd_proj/Pages/welcome.dart';
 import 'package:gradd_proj/firebase_options.dart';
@@ -47,7 +49,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(), //mtnseesh t7oty el splash screen hena
+      home: Welcome(), //mtnseesh t7oty el splash screen hena
       // Define named routes for easy navigation
        routes: {
         '/welcome': (context) => Welcome(), // Example route for SignUp widget

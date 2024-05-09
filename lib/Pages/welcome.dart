@@ -6,7 +6,7 @@ import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
 import 'package:gradd_proj/Pages/pagesUser/login.dart';
 import 'package:gradd_proj/Pages/pagesUser/signup.dart';
 import 'package:gradd_proj/Pages/pagesWorker/login.dart';
-import 'package:gradd_proj/Pages/pagesWorker/signup.dart';
+
 import 'package:provider/provider.dart';
 
 import '../Domain/user_provider.dart';

@@ -1,21 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:gradd_proj/Pages/pagesUser/history.dart';
-import 'package:gradd_proj/Pages/pagesUser/reqEmergency.dart';
-import 'package:gradd_proj/Pages/pagesUser/userinfo.dart';
-import 'package:gradd_proj/Pages/pagesWorker/History.dart';
-import 'package:gradd_proj/Pages/Menu_pages/settingsPage.dart';
-import 'package:gradd_proj/Pages/welcome.dart';
 
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 import 'package:provider/provider.dart';
+
 import '../../Domain/WokerBottomNavBar.dart';
 import '../../Domain/bottom.dart';
 import '../../Domain/customAppBar.dart';
 import '../../Domain/user_provider.dart';
+import '../pagesUser/History.dart';
+import '../pagesUser/reqEmergency.dart';
+import '../pagesUser/userinfo.dart';
+import '../pagesWorker/History.dart';
+import '../welcome.dart';
 import 'aboutApp.dart';
+import 'settingsPage.dart';
 
 class MenuDrawerPage extends StatefulWidget {
   const MenuDrawerPage({Key? key}) : super(key: key);
@@ -30,7 +31,11 @@ class _MenuDrawerPageState extends State<MenuDrawerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(scaffoldKey: _scaffoldKey),
+      appBar: CustomAppBar(
+        scaffoldKey: _scaffoldKey,
+        // firestore: FirebaseFirestore.instance,
+        //collection: FirebaseFirestore.instance.collection('services'),
+      ),
       drawer: Menu(scaffoldKey: _scaffoldKey),
     );
   }
@@ -79,10 +84,12 @@ class Menu extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         StreamBuilder(
-                          stream: FirebaseFirestore.instance
-                              .collection(isUser ? "users" : "workers")
-                              .doc(currentUser.currentUser!.uid)
-                              .snapshots(),
+                          stream: currentUser.currentUser != null
+                              ? FirebaseFirestore.instance
+                                  .collection(isUser ? "users" : "workers")
+                                  .doc(currentUser.currentUser!.uid)
+                                  .snapshots()
+                              : null, // If currentUser is null, pass null to the stream
                           builder: (context,
                               AsyncSnapshot<DocumentSnapshot> snapshot) {
                             if (snapshot.connectionState ==
@@ -101,13 +108,13 @@ class Menu extends StatelessWidget {
                                 snapshot.data!.data() as Map<String, dynamic>?;
 
                             if (userData == null ||
-                                !userData.containsKey('firstName') ||
-                                !userData.containsKey('lastName')) {
+                                !userData.containsKey('First Name') ||
+                                !userData.containsKey('Last Name')) {
                               return Text('User data is incomplete');
                             }
 
-                            String firstName = userData['firstName'];
-                            String lastName = userData['lastName'];
+                            String firstName = userData['First Name'];
+                            String lastName = userData['Last Name'];
 
                             return Text(
                               '$firstName $lastName',
@@ -152,7 +159,7 @@ class Menu extends StatelessWidget {
 
                     if (isUser) {
                       PersistentNavBarNavigator.pushNewScreen(context,
-                          screen: const Cutomerinfo(), withNavBar: false);
+                          screen: const user_worker_info(), withNavBar: false);
                     } else {
                       // Handle worker profile tap
                     }

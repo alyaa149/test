@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +58,8 @@ class _HistoryState extends State<History> {
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('appointments')
-                    .where('user', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                    .where('user',
+                        isEqualTo: FirebaseAuth.instance.currentUser!.uid)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -79,10 +82,11 @@ class _HistoryState extends State<History> {
                     return ListView.builder(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
-                   
                       itemCount: documents.length,
                       itemBuilder: (context, index) {
                         final appointmentDoc = documents[index];
+                        final appointmentId = appointmentDoc.id;
+
                         final workerId = appointmentDoc.get('worker');
                         final commissionFee =
                             appointmentDoc.get('CommissionFee');
@@ -92,15 +96,33 @@ class _HistoryState extends State<History> {
                             appointmentDoc.get('Date') as Timestamp?;
                         final time = appointmentDoc.get('Time');
                         String date;
+                        String dayOfWeek;
+                        //String days;
                         if (dateTimestamp != null) {
                           final dateTime = dateTimestamp.toDate();
                           date =
                               '${dateTime.year}-${dateTime.month}-${dateTime.day}';
+                          final days = [
+                            'Monday',
+                            'Tuesday',
+                            'Wednesday',
+                            'Thursday',
+                            'Friday',
+                            'Saturday',
+                            'Sunday'
+                          ];
+
+                          // Get the index of the day of the week (0 for Monday, 1 for Tuesday, etc.)
+                          final dayIndex = dateTime.weekday - 1;
+                          // Get the day of the week name using the index
+                          dayOfWeek = days[dayIndex];
                         } else {
-                          date = 'nooooo'; // Default value if Date is null
+                          date = 'nooooo';
+                          dayOfWeek = 'no';// Default value if Date is null
                         }
                         final description = appointmentDoc.get('Type');
                         final emergency = appointmentDoc.get('Emergency');
+
                         return FutureBuilder<DocumentSnapshot>(
                           future: FirebaseFirestore.instance
                               .collection('workers')
@@ -120,7 +142,9 @@ class _HistoryState extends State<History> {
                               final phone = snapshot.data!.get('PhoneNumber');
                               final rating =
                                   snapshot.data!.get('Rating').toDouble();
+                                  final type =snapshot.data!.get('Type');
                               print("dadadadadadada:  $date");
+                              print('dau of the week $dayOfWeek');
 
                               return ListItem(
                                 Member: {
@@ -131,34 +155,41 @@ class _HistoryState extends State<History> {
                                   'Rating': rating,
                                   'CommissionFee': commissionFee
                                 },
-                                trailingWidget: emergency == 'true'
+                                trailingWidget: emergency == true
                                     ? Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: 10),
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
                                         child: Image.asset(
                                             "assets/images/Siren.png"),
                                       )
                                     : Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: 10),
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
                                         child: Image.asset(
                                             "assets/images/Siren2.png"),
                                       ),
-                                onPressed: () => navigateToPage1(
-                                    context,
-                                    HistoryPage(member: {
-                                      'First Name': firstName,
-                                      'Last Name': lastName,
-                                      'Pic': pic,
-                                      'PhoneNumber': phone,
-                                      'Rating': rating,
-                                      'CommissionFee': commissionFee,
-                                      'Address': address,
-                                      'Description': description,
-                                      'Date': date,
-                                      'Time': time,
-                                      'PhotoURL': photourl
-                                    })),
+                                onPressed: () {
+                                  print('Emergnecy $emergency');
+                                  navigateToPage1(
+                                      context,
+                                      HistoryPage(member: {
+                                        'First Name': firstName,
+                                        'Last Name': lastName,
+                                        'Pic': pic,
+                                        'PhoneNumber': phone,
+                                        'Rating': rating,
+                                        'CommissionFee': commissionFee,
+                                        'Address': address,
+                                        'Description': description,
+                                        'Date': date,
+                                        'Time': time,
+                                        'PhotoURL': photourl,
+                                        'workerId': workerId,
+                                        'appointmentId': appointmentId,
+                                        'day':dayOfWeek,
+                                        'Type' :type
+                                      }));
+                                },
                                 pageIndex: 3,
                               );
                             }

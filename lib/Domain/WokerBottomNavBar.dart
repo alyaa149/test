@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import '../Pages/SocialMedia_pages/adminchat.dart';
-import '../Pages/pagesWorker/home.dart';
-import '../Pages/pagesWorker/notificationsWorker.dart';
-import '../Pages/SocialMedia_pages/posts.dart';
 
+import 'package:gradd_proj/Pages/SocialMedia_pages/adminchat.dart';
+import 'package:gradd_proj/Pages/SocialMedia_pages/posts.dart';
+import 'package:gradd_proj/Pages/pagesWorker/home.dart';
+import 'package:gradd_proj/Pages/pagesWorker/notificationsWorker.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+
+// Main Navigation Screen
 class BottomNavBarWorker extends StatefulWidget {
   const BottomNavBarWorker({Key? key}) : super(key: key);
 
@@ -13,9 +15,7 @@ class BottomNavBarWorker extends StatefulWidget {
 }
 
 class _BottomNavBarWorkerState extends State<BottomNavBarWorker> {
-  final _controller = PageController(initialPage: 0);
-
-  int _selectedIndex = 0;
+  final _controller = PersistentTabController(initialIndex: 0);
 
   List<Widget> screens() {
     return [
@@ -26,41 +26,52 @@ class _BottomNavBarWorkerState extends State<BottomNavBarWorker> {
     ];
   }
 
+  List<PersistentBottomNavBarItem> navBarItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.home),
+        title: "Home",
+        activeColorPrimary: Colors.black87,
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.support_agent),
+        title: "Admin Chat",
+        activeColorPrimary: Colors.black87,
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.notifications),
+        title: "Notifications",
+        activeColorPrimary: Colors.black87,
+        inactiveColorPrimary: Colors.white,
+        iconSize: 28,
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      ),
+      PersistentBottomNavBarItem(
+          icon: const Icon(Icons.handshake),
+          title: "Social Media",
+          iconSize: 28,
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          activeColorPrimary: Colors.black87,
+          inactiveColorPrimary: Colors.white),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _controller,
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        children: screens(),
-      ),
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _selectedIndex,
-        height: 65,
-        color: Color(0xFFBBA2BF),
-        backgroundColor: Colors.transparent,
-        buttonBackgroundColor: Color(0xFFBBA2BF),
-        items: <Widget>[
-          Icon(Icons.home, size: 30, color: Colors.white),
-          Icon(Icons.support_agent, size: 30, color: Colors.white),
-          Icon(Icons.notifications, size: 30, color: Colors.white),
-          Icon(Icons.handshake, size: 30, color: Colors.white),
-        ],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-            _controller.animateToPage(
-              index,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-          });
-        },
-      ),
+    return PersistentTabView(
+      context,
+      screens: screens(),
+      items: navBarItems(),
+      controller: _controller,
+      navBarStyle: NavBarStyle.style1,
+      popAllScreensOnTapOfSelectedTab: true,
+      backgroundColor: const Color(0xFFBBA2BF),
     );
   }
 }

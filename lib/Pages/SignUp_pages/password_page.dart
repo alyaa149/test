@@ -1,8 +1,11 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gradd_proj/Pages/SignUp_pages/workerRequest.dart';
 import 'package:provider/provider.dart';
 import 'package:gradd_proj/Domain/user_provider.dart';
 import 'package:gradd_proj/Domain/WokerBottomNavBar.dart';
@@ -40,11 +43,14 @@ class _PasswordPageState extends State<PasswordPage> {
 
   get sha256 => null;
 
-  void toggleLoadingAnimation() {
+ void toggleLoadingAnimation() {
+  if (mounted) {
     setState(() {
       showDel = !showDel;
     });
   }
+}
+
 
   Future<void> _registerWithEmailAndPassword() async {
     // Validations for password length and matching passwords
@@ -95,13 +101,19 @@ class _PasswordPageState extends State<PasswordPage> {
           .doc(userCredential.user!.uid)
           .set({
         'email': widget.email,
-        'firstName': widget.firstName,
-        'lastName': widget.lastName,
-        'phoneNumber': widget.phoneNumber,
+        'First Name': widget.firstName,
+        'Last Name': widget.lastName,
+        'PhoneNumber': widget.phoneNumber,
         'type': widget.isUser ? 'user' : 'worker',
         'favorits': [],
-        'Rating': 5.0,
+        'Rating': 0,
+        'about': 'userrrrr',
         'Pic': '',
+        'NumberOfRating' : 0,
+        'reviews': {},
+
+        'packagesId' :[],
+
       });
 
       // Navigate to Welcome page after successful registration
@@ -109,7 +121,8 @@ class _PasswordPageState extends State<PasswordPage> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              widget.isUser ? BottomNavBarUser() : BottomNavBarWorker(),
+              widget.isUser ? BottomNavBarUser() : BottomNavBarWorker()
+              // WorkerRequest(email: widget.email, firstName: widget.firstName, lastName: '', isUser: widget.isUser, phoneNumber: '',),
         ),
       );
 
@@ -289,18 +302,23 @@ class _PasswordPageState extends State<PasswordPage> {
                         SizedBox(height: 20.0),
                         Center(
                             child: ElevatedButton(
-                          onPressed: () async {
-                            setState(() {
-                              toggleLoadingAnimation(); // Start loading animation
-                            });
+                       onPressed: () async {
+  if (mounted) {
+    setState(() {
+      toggleLoadingAnimation(); // Start loading animation
+    });
+  }
 
-                            // Perform your registration or any other operation here
-                            await _registerWithEmailAndPassword();
+  // Perform your registration or any other operation here
+  await _registerWithEmailAndPassword();
 
-                            setState(() {
-                              toggleLoadingAnimation(); // Stop loading animation
-                            });
-                          },
+  if (mounted) {
+    setState(() {
+      toggleLoadingAnimation(); // Stop loading animation
+    });
+  }
+},
+
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFBBA2BF),
                             fixedSize: Size(120, 50),
