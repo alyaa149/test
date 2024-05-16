@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gradd_proj/Domain/customAppBar.dart';
 import 'package:gradd_proj/Pages/SocialMedia_pages/posts.dart';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
@@ -29,9 +28,34 @@ class _CreatePostState extends State<CreatePost> {
   File? _selectedImage;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Future<String> _fetchProfilePicUrl() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return 'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'; // Return default profile picture URL if the user is not authenticated
+    }
+
+    final userDocumentSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
+
+    if (userDocumentSnapshot.exists) {
+      final userData = userDocumentSnapshot.data();
+      if (userData != null && userData.containsKey('Pic')) {
+        return userData['Pic'] as String;
+      } else {
+        return 'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'; // Return default profile picture URL if 'Pic' field doesn't exist
+      }
+    } else {
+      return 'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'; // Return default profile picture URL if the user document does not exist
+    }
+  }
+
   Future<void> _submitRequest() async {
     final String description = _descriptionController.text;
     final username = await _fetchUsernameFromFirestore();
+    final userId =
+        FirebaseAuth.instance.currentUser?.uid; // Get the current user's ID
     String imageUrl1 = '';
     final imageUrl = _pickedImagePath ?? '';
     final imagePath = _pickedImagePath1 ?? '';
@@ -39,7 +63,8 @@ class _CreatePostState extends State<CreatePost> {
 
     final requestData = {
       'description': description,
-      'username': username, // Use the username fetched from Firestore
+      'username': username,
+      'userId': userId, // Add the current user's ID to the requestData
       'gallerypic': imageUrl,
       'camerapic': imagePath,
       'Date': dateTimestamp,
@@ -101,8 +126,8 @@ class _CreatePostState extends State<CreatePost> {
 
     if (userDocumentSnapshot.exists) {
       // If the user document exists, get the usernames from it
-      final username1 = userDocumentSnapshot.data()?['First Name'] as String?;
-      final username2 = userDocumentSnapshot.data()?['Last Name'] as String?;
+      final username1 = userDocumentSnapshot.data()?['First Name'] as String;
+      final username2 = userDocumentSnapshot.data()?['Last Name'] as String;
 
       // Combine the usernames into a single string
       final combinedUsername = '$username1 $username2';
@@ -121,6 +146,7 @@ class _CreatePostState extends State<CreatePost> {
         _pickedImage = File(pickedImage.path);
         _pickedImagePath = pickedImage.path;
         _selectedImage = _pickedImage; // Set the selected image
+        _uploadingImage = true; // Set uploading status to true
       });
 
       final imageUrl = await uploadImageToFirebase(_pickedImage);
@@ -137,6 +163,11 @@ class _CreatePostState extends State<CreatePost> {
           const SnackBar(content: Text('Failed to upload image')),
         );
       }
+
+      setState(() {
+        _uploadingImage =
+            false; // Set uploading status to false after upload completes
+      });
     }
   }
 
@@ -211,21 +242,26 @@ class _CreatePostState extends State<CreatePost> {
               ListView(
                 padding: EdgeInsets.symmetric(vertical: 100),
                 children: [
-                  FutureBuilder<String>(
-                    future: _fetchUsernameFromFirestore(),
+                  FutureBuilder<List<String>>(
+                    future: Future.wait(
+                        [_fetchProfilePicUrl(), _fetchUsernameFromFirestore()]),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        // While waiting for the user ID to be fetched, you can show a loading indicator
+                        // While waiting for the data to be fetched, show a loading indicator
                         return CircularProgressIndicator();
                       } else if (snapshot.hasError) {
-                        // If there's an error fetching the user ID, display an error message
+                        // If there's an error fetching the data, display an error message
                         return Text('Error: ${snapshot.error}');
                       } else {
-                        // If the user ID is successfully fetched, display the FriendPost widget
-                        final userId = snapshot.data;
+                        // If the data is successfully fetched, extract profile pic URL and username
+                        final List<String> data = snapshot.data!;
+                        final String proPic = data[0];
+                        final String proName = data[1];
+
+                        // Pass profile pic URL and username to the FriendPost widget
                         return FriendPost(
-                          proPic: 'assets/images/profile.png',
-                          proName: userId ?? '', // Use the fetched user ID
+                          proPic: proPic,
+                          proName: proName,
                         );
                       }
                     },
@@ -275,7 +311,7 @@ class _CreatePostState extends State<CreatePost> {
                             width: double.infinity,
                             child: Row(
                               mainAxisAlignment:
-                                  MainAxisAlignment.start, // يبدأ من اليسار
+                                  MainAxisAlignment.center, // يبدأ من اليسار
                               children: [
                                 TextButton.icon(
                                   onPressed:
@@ -284,9 +320,35 @@ class _CreatePostState extends State<CreatePost> {
                                   label: Text('Upload photo/video'),
                                 ),
                                 _selectedImage != null
-                                    ? Image.network(_selectedImage!
-                                        .path) // Use Image.network for web
-                                    : SizedBox(height: 0),
+                                    ? Container(
+                                        width: 60, // Adjust width as needed
+                                        height: 60, // Adjust height as needed
+                                        decoration: BoxDecoration(
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: Image.file(
+                                            _selectedImage!), // Show selected image
+                                      )
+                                    : Container(
+                                        width: 60, // Adjust width as needed
+                                        height: 60, // Adjust height as needed
+                                        decoration: BoxDecoration(
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: Icon(Icons
+                                            .image), // Placeholder if no image is selected
+                                      ),
+
+                                // Display progress indicator if uploading image
+                                if (_uploadingImage)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child:
+                                        CircularProgressIndicator(), // Show progress indicator
+                                  ),
                                 SizedBox(height: 20),
                               ],
                             ),
@@ -335,9 +397,10 @@ class _CreatePostState extends State<CreatePost> {
     return Column(
       children: <Widget>[
         Container(
-          width: double.infinity,
+          width: 700,
+          padding: EdgeInsets.only(left: 20),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Container(
                 width: 60.0,
@@ -346,7 +409,7 @@ class _CreatePostState extends State<CreatePost> {
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.brown),
                   image: DecorationImage(
-                    image: AssetImage(proPic),
+                    image: NetworkImage(proPic),
                     fit: BoxFit.cover,
                   ),
                 ),

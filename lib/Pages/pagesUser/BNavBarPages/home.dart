@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
 import 'package:gradd_proj/Pages/pagesUser/reqEmergency.dart';
@@ -20,6 +21,7 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+        print('print cuurent user${FirebaseAuth.instance.currentUser!.uid}');
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(scaffoldKey: _scaffoldKey, showSearchBox: true,

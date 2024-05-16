@@ -10,7 +10,7 @@ import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/favorites.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/home.dart';
 import 'package:gradd_proj/Pages/pagesUser/req.dart';
-import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
+import 'package:gradd_proj/Pages/toqaHistoryUser.dart';
 import 'package:gradd_proj/Pages/pagesUser/userchat.dart';
 
 import 'package:provider/provider.dart';

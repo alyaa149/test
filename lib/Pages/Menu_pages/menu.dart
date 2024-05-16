@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gradd_proj/Pages/Menu_pages/History.dart';
 
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
@@ -13,7 +14,7 @@ import '../../Domain/user_provider.dart';
 import '../pagesUser/History.dart';
 import '../pagesUser/reqEmergency.dart';
 import '../pagesUser/userinfo.dart';
-import '../pagesWorker/History.dart';
+
 import '../welcome.dart';
 import 'aboutApp.dart';
 import 'settingsPage.dart';
@@ -77,12 +78,6 @@ class Menu extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundImage:
-                              AssetImage('assets/images/profile.png'),
-                        ),
-                        SizedBox(height: 8),
                         StreamBuilder(
                           stream: currentUser.currentUser != null
                               ? FirebaseFirestore.instance
@@ -116,12 +111,24 @@ class Menu extends StatelessWidget {
                             String firstName = userData['First Name'];
                             String lastName = userData['Last Name'];
 
-                            return Text(
-                              '$firstName $lastName',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.black,
-                              ),
+                            return Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 50,
+                                  backgroundImage: NetworkImage(
+                                    userData?['Pic'] ??
+                                        'assets/images/profile.png',
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '$firstName $lastName',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         ),

@@ -7,6 +7,8 @@ import 'package:rxdart/rxdart.dart' as Rx;
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:rxdart/rxdart.dart';
+
 
 
 class WorkerChat extends StatefulWidget {
@@ -79,6 +81,8 @@ class _WorkerChatState extends State<WorkerChat> {
           'message': imageUrl,
           'sender': 'Worker',
           'timestamp': FieldValue.serverTimestamp(),
+          'user' :widget.userId
+
         });
 
         // Add image message to customer's collection
@@ -86,6 +90,7 @@ class _WorkerChatState extends State<WorkerChat> {
           'message': imageUrl,
           'sender': 'Worker',
           'timestamp': FieldValue.serverTimestamp(),
+              'worker' :widget.workerId
         });
       } catch (error) {
         // Handle error
@@ -99,12 +104,12 @@ class _WorkerChatState extends State<WorkerChat> {
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back),
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-      ),
+      // leading: IconButton(
+      //   icon: Icon(Icons.arrow_back),
+      //   onPressed: () {
+      //     Navigator.of(context).pop();
+      //   },
+      // ),
       title: Row(
         children: [
           Text(
@@ -246,6 +251,7 @@ return ListView.builder(
                       'message': newMessage,
                       'sender': 'Worker',
                       'timestamp': FieldValue.serverTimestamp(),
+                      'user' :widget.userId
                     });
 
                     // Add message to customer's collection
@@ -253,6 +259,7 @@ return ListView.builder(
                       'message': newMessage,
                       'sender': 'Worker',
                       'timestamp': FieldValue.serverTimestamp(),
+                          'worker' :widget.workerId
                     });
 
                     _messageController.clear();
@@ -269,8 +276,23 @@ return ListView.builder(
 }
 
   Stream<QuerySnapshot<Object?>> _mergeMessageStreams() {
-    final workerStream = _workerMessagesCollection.orderBy('timestamp', descending: true).snapshots();
-    final userStream = _userMessagesCollection.orderBy('timestamp', descending: true).snapshots();
+    final workerStream = _workerMessagesCollection 
+      .where('user' ,isEqualTo: widget.userId)
+      .orderBy('timestamp', descending: true)
+      .snapshots()
+       .handleError((error) {
+      // Handle error here
+      print('Worker stream error: $error');
+    });
+    final userStream = _userMessagesCollection
+    .orderBy('timestamp', descending: true)
+        .where('worker' ,isEqualTo: widget.workerId)
+
+    .snapshots()
+     .handleError((error) {
+      // Handle error here
+      print('User stream error: $error');
+    });
 
     return Rx.MergeStream([
       workerStream,

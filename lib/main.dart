@@ -9,6 +9,7 @@ import 'package:gradd_proj/Pages/Subscription_Pages/packagesPage.dart';
 import 'package:gradd_proj/Pages/splashscreen.dart';
 import 'package:gradd_proj/Pages/welcome.dart';
 import 'package:gradd_proj/firebase_options.dart';
+import 'package:gradd_proj/wrapper.dart';
 import 'package:provider/provider.dart';
 
 import 'Domain/themeNotifier.dart';
@@ -16,6 +17,8 @@ import 'Domain/user_provider.dart';
 
 void main() async {
 WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(
     MultiProvider(
@@ -49,7 +52,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Welcome(), //mtnseesh t7oty el splash screen hena
+      home: Wrapper(), //mtnseesh t7oty el splash screen hena
       // Define named routes for easy navigation
        routes: {
         '/welcome': (context) => Welcome(), // Example route for SignUp widget

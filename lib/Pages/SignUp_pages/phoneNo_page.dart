@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
@@ -10,12 +12,14 @@ class PhoneNumberPage extends StatefulWidget {
   final String firstName;
   final String lastName;
   final bool isUser;
+  final File? imageFile;
 
   PhoneNumberPage(
       {required this.email,
       required this.firstName,
       required this.lastName,
-      required this.isUser});
+      required this.isUser,
+      required this.imageFile});
 
   @override
   _PhoneNumberPageState createState() => _PhoneNumberPageState();
@@ -24,7 +28,6 @@ class PhoneNumberPage extends StatefulWidget {
 class _PhoneNumberPageState extends State<PhoneNumberPage> {
   late String phoneNumber = ''; // Initialize with an empty string
   final _formKey = GlobalKey<FormState>();
-
   String phoneNumberError = '';
 
   @override
@@ -145,6 +148,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                                         lastName: widget.lastName,
                                         phoneNumber: '+2$phoneNumber',
                                         isUser: widget.isUser,
+                                        imageFile: widget.imageFile,
                                       ),
                                     ),
                                   );

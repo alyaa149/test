@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/email_page.dart';
 import 'package:gradd_proj/Domain/user_provider.dart';
+import 'package:gradd_proj/Pages/SignUp_pages/profilePic_page.dart';
 import 'package:gradd_proj/Pages/pagesUser/login.dart';
 import 'package:gradd_proj/Pages/pagesWorker/login.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,7 @@ class _UsernamePageState extends State<UsernamePage> {
   String? _lastNameError;
   @override
   Widget build(BuildContext context) {
+        bool isUser = Provider.of<UserProvider>(context).isUser;
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -65,7 +67,7 @@ class _UsernamePageState extends State<UsernamePage> {
                 Center(
                   child: Container(
                     width: 320,
-                    height: 360,
+                    height: 340,
                     decoration: BoxDecoration(
                       color: Color(0xFFF5F3F3),
                       borderRadius: BorderRadius.circular(20.0),
@@ -133,7 +135,7 @@ class _UsernamePageState extends State<UsernamePage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => EmailPage(
+                                        builder: (context) => ProfilePicPage(
                                           firstName: _firstNameController.text,
                                           lastName: _lastNameController.text,
                                           isUser: widget.isUser,
@@ -155,24 +157,25 @@ class _UsernamePageState extends State<UsernamePage> {
                                 ),
                                 SizedBox(height: 10),
                                 GestureDetector(
-                                  onTap: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => widget.isUser ? Login() : LoginWorker(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Already have an account? Login',
-                                    style: TextStyle(
-                                      fontFamily: "Raleway",
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
+  onTap: () {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => isUser ? Login() : LoginWorker(),
+      ),
+    );
+  },
+  child: Text(
+    'Already have an account? ${isUser ? 'Login' : 'Login'}',
+    style: TextStyle(
+      fontFamily: "Raleway",
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+)
+,
                               ],
                             ),
                           ),

@@ -2,11 +2,14 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gradd_proj/Pages/Menu_pages/History.dart';
 
 import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
-import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
-import 'package:gradd_proj/Pages/pagesWorker/History.dart';
+import 'package:gradd_proj/Pages/pagesUser/History.dart';
+
+import 'package:gradd_proj/Pages/toqaHistoryUser.dart';
+
 
 import '../../Domain/customAppBar.dart';
 
@@ -134,7 +137,7 @@ class alartsWorker extends StatelessWidget {
                                       recognizer: TapGestureRecognizer()
                                         ..onTap = () {
                                           navigateToPage1(
-                                              context, HistoryWorker());
+                                              context, History());
                                         },
                                     ),
                                   ],

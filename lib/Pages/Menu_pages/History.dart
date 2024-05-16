@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/workerslist.dart';
-import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
+
+import 'package:gradd_proj/Pages/toqaHistoryUser.dart';
 import '../../Domain/customAppBar.dart';
 import '../../Domain/listItem.dart';
 import '../Menu_pages/menu.dart';
+
 
 class HistoryWorker extends StatefulWidget {
   @override
@@ -91,7 +93,7 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                         String date;
                         String day;
                         String dayOfWeek;
-                     
+
                         //String days;
                         if (dateTimestamp != null) {
                           final dateTime = dateTimestamp.toDate();
@@ -113,7 +115,7 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                           dayOfWeek = days[dayIndex];
                         } else {
                           date = 'nooooo';
-                          dayOfWeek = 'no';// Default value if Date is null
+                          dayOfWeek = 'no'; // Default value if Date is null
                         }
                         final description = appointmentDoc.get('Type');
 
@@ -136,56 +138,62 @@ class _HistoryWorkerState extends State<HistoryWorker> {
                             } else if (snapshot.hasError) {
                               return Text('Error: ${snapshot.error}');
                             } else {
-                              final firstName =
-                                  snapshot.data!.get('First Name');
-                              final lastName = snapshot.data!.get('Last Name');
-                              final pic = snapshot.data!.get('Pic');
-                              final phone = snapshot.data!.get('PhoneNumber');
-                              final rating =
-                                  snapshot.data!.get('Rating').toDouble();
-
-                              return ListItem(
-                                Member: {
-                                  'First Name': firstName,
-                                  'Last Name': lastName,
-                                  'Pic': pic,
-                                  'PhoneNumber': phone,
-                                  'Rating': rating,
-                                  'CommissionFee': commissionFee
-                                },
-                                trailingWidget: emergency == true
-                                    ? Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 10),
-                                        child: Image.asset(
-                                            "assets/images/Siren.png"),
-                                      )
-                                    : Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 10),
-                                        child: Image.asset(
-                                            "assets/images/Siren2.png"),
-                                      ),
-                                onPressed: () => navigateToPage1(
-                                    context,
-                                    HistoryPage(member: {
-                                      'First Name': firstName,
-                                      'Last Name': lastName,
-                                      'Pic': pic,
-                                      'PhoneNumber': phone,
-                                      'Rating': rating,
-                                      'CommissionFee': commissionFee,
-                                      'Address': address,
-                                      'Description': description,
-                                      'Date': date,
-                                      'Time': time,
-                                      'PhotoURL': photourl,
-                                      'userId': userId,
-                                      'appointmentId': appointmentId,
-                                          'day':dayOfWeek
-                                    })),
-                                pageIndex: 3,
-                              );
+                              if (snapshot.data!.exists) {
+                                final firstName =
+                                    snapshot.data!.get('First Name');
+                                final lastName =
+                                    snapshot.data!.get('Last Name');
+                                final pic = snapshot.data!.get('Pic');
+                                final phone = snapshot.data!.get('PhoneNumber');
+                                final rating =
+                                    snapshot.data!.get('Rating').toDouble();
+                                return ListItem(
+                                  Member: {
+                                    'First Name': firstName,
+                                    'Last Name': lastName,
+                                    'Pic': pic,
+                                    'PhoneNumber': phone,
+                                    'Rating': rating,
+                                    'CommissionFee': commissionFee
+                                  },
+                                  trailingWidget: emergency == true
+                                      ? Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 10),
+                                          child: Image.asset(
+                                              "assets/images/Siren.png"),
+                                        )
+                                      : Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 10),
+                                          child: Image.asset(
+                                              "assets/images/Siren2.png"),
+                                        ),
+                                  onPressed: () => navigateToPage1(
+                                      context,
+                                      HistoryPage(member: {
+                                        'First Name': firstName,
+                                        'Last Name': lastName,
+                                        'Pic': pic,
+                                        'PhoneNumber': phone,
+                                        'Rating': rating,
+                                        'CommissionFee': commissionFee,
+                                        'Address': address,
+                                        'Description': description,
+                                        'Date': date,
+                                        'Time': time,
+                                        'PhotoURL': photourl,
+                                        'userId': userId,
+                                        'appointmentId': appointmentId,
+                                        'day': dayOfWeek
+                                      })),
+                                  pageIndex: 3,
+                                );
+                              } else {
+                                return Center(
+                                  child: Text("no"),
+                                );
+                              }
                             }
                           },
                         );

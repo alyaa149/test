@@ -10,25 +10,27 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../Domain/WokerBottomNavBar.dart';
 import '../pagesWorker/home.dart';
 
 
 class WorkerRequest extends StatefulWidget {
 //  const WorkerRequest({Key? key}) : super(key: key);
 
- final String email;
- final String firstName;
- final String lastName;
- final bool isUser;
- final String phoneNumber;
-
- WorkerRequest(
-     {required this.email,
-     required this.firstName,
-     required this.lastName,
-     required this.isUser,
-     required this.phoneNumber});
+  final String email;
+  final String firstName;
+  final String lastName;
+  final bool isUser;
+  final String phoneNumber;
+  final String password;
+  final String imageUrl;
+  WorkerRequest(
+      {required this.email,
+      required this.firstName,
+      required this.lastName,
+      required this.isUser,
+      required this.phoneNumber,
+      required this.password,
+      required this.imageUrl});
   @override
   _WorkerRequestState createState() => _WorkerRequestState();
 }
@@ -36,18 +38,37 @@ class WorkerRequest extends StatefulWidget {
 class _WorkerRequestState extends State<WorkerRequest> {
   bool isAvailable24H = false;
   bool _isSendingRequest = false;
-  String? _pickedImagePath;
-  String? _pickedImagePath1;
+  String? _selectedCategoryE;
+  String? _selectedCategoryC;
+
+  List<String> cities = [
+    'Cairo',
+    'Alexandria',
+    'Giza',
+    'Shubra El-Kheima',
+    'Port Said',
+    'Suez',
+    'Luxor',
+    'Mansoura',
+    'Tanta',
+    'Asyut',
+    'Ismailia',
+    'Fayoum',
+    'Zagazig',
+    'Aswan',
+    'Damietta',
+  ];
+
+  String selectedCity = 'Cairo';
 
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _nationalidController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _selectedCategory;
 
-  //import firebasestorage package
-  void _submitRequest() async {
-    // Stop execution if National ID card is not uploaded
+  
 
+  void _submitRequest() async {
     final Map<String, String> categoryServiceMap = {
       'Carpenters': 'service5',
       'Marble Craftsmen': 'service3',
@@ -58,50 +79,73 @@ class _WorkerRequestState extends State<WorkerRequest> {
       'Plastering': 'service4',
       'Appliance Repair Technician': 'service2',
       'Alumetal Technicians': 'service1',
-      // Add more categories and their corresponding service IDs as needed
     };
-    String? categoryId = _selectedCategory;
-    if (categoryServiceMap.containsKey(_selectedCategory)) {
-      categoryId = categoryServiceMap[_selectedCategory]!;
+    // Retrieve the service ID corresponding to the selected category for emergency request
+    String? categoryIdE = _selectedCategoryE;
+    if (categoryServiceMap.containsKey(_selectedCategoryE)) {
+      categoryIdE = categoryServiceMap[_selectedCategoryE]!;
     }
-    // final String address = _addressController.text;
+
     final String description = _descriptionController.text;
     final String nationalid = _nationalidController.text;
 
     final dateTimestamp = DateTime.now();
-      final currentUserID = FirebaseAuth.instance.currentUser!.uid;
-    final Map<String, dynamic> requestData = {
-      'Date': dateTimestamp,     
-      'Type': description,
-      'Service': categoryId,
-      'National-ID': nationalid,
-      'Emergency': isAvailable24H,
-      'user': currentUserID,
-      'worker': FirebaseAuth.instance.currentUser!.uid,
-      'email': widget.email,
-      'First Name': widget.firstName,
-      'Last Name': widget.lastName,
-      'PhoneNumber': widget.phoneNumber,
-      'type': widget.isUser ? 'user' : 'worker',
-      'favorits': [],
-      'Rating': 0,
-      'NumberOfRating' :0,
-      'reviews' : {},
-      'Pic': '',
-      'packagesId' :[],
-      'City':"al"
-    };
+
     try {
-      await FirebaseFirestore.instance.collection('workers').add(
-            requestData,
-          );
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: widget.email,
+        password: widget.password,
+      );
+      String? categoryIdC = _selectedCategoryC;
+      if (categoryServiceMap.containsKey(_selectedCategoryC)) {
+        categoryIdC = categoryServiceMap[_selectedCategoryC]!;
+      }
+
+      print('printt ${userCredential.user!.uid}');
+      await FirebaseFirestore.instance
+          .collection('workers')
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': widget.email ?? '',
+        'First Name': widget.firstName ?? '',
+        'Last Name': widget.lastName ?? '',
+        'PhoneNumber': widget.phoneNumber ?? '',
+        'type': 'worker',
+        'Rating': 0,
+        'about': 'workerr',
+        'Pic': widget.imageUrl ?? '',
+        'NumberOfRating': 0,
+        'Date': dateTimestamp ?? '',
+        'Type': description ?? '',
+        'Service': categoryIdC ?? '', // Use the dynamically generated service name
+        'National-ID': nationalid ?? '',
+        'Emergency': isAvailable24H ?? '',
+        'City': selectedCity ?? '',
+        'isConfirmed': true,
+        'reviews': {},
+        'packagesId': [],
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Request sent successfully')),
+        const SnackBar(content: Text('sent successfully')),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send request')),
+        const SnackBar(content: Text(' Failed to send request')),
       );
+    }
+  }
+
+  void _validateNationalID() {
+    if (_nationalidController.text.length != 14) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('National-ID must be 14 digit'),
+        ),
+      );
+    } else {
+      print('National ID: ${_nationalidController.text}');
     }
   }
 
@@ -135,12 +179,12 @@ class _WorkerRequestState extends State<WorkerRequest> {
             ),
 
             SizedBox(
-              height: 30,
+              height: 10,
             ),
 
 // Add Post Fields and Button
             Positioned(
-              top: 200,
+              top: 150,
               left: 20,
               right: 20,
               child: Column(
@@ -159,8 +203,8 @@ class _WorkerRequestState extends State<WorkerRequest> {
                             hintText: 'Describe Yourself.......',
                             border: InputBorder.none,
                           ),
-                          minLines: 3,
-                          maxLines: 5,
+                          minLines: 1,
+                          maxLines: 3,
                           controller: _descriptionController,
                           validator: (value) {
                             if (value!.isEmpty) {
@@ -188,7 +232,8 @@ class _WorkerRequestState extends State<WorkerRequest> {
                                       title: Text('Carpenters'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory = 'Carpenters';
+                                          _selectedCategoryE = 'Carpenters';
+                                          _selectedCategoryC = 'Carpenters';
                                         });
                                         // Set _selectedCategory to 'service1' when 'Carpenters' is selected
                                         Navigator.pop(context);
@@ -198,44 +243,51 @@ class _WorkerRequestState extends State<WorkerRequest> {
                                       title: Text('Marble Craftsmen'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory =
+                                          _selectedCategoryC =
+                                              'Marble Craftsmen';
+                                          _selectedCategoryE =
                                               'Marble Craftsmen';
                                         });
                                         Navigator.pop(context);
                                       },
                                     ),
+
                                     ListTile(
                                       title: Text('Plumbers'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory = 'Plumbers';
+                                          _selectedCategoryC = 'Plumbers';
+                                          _selectedCategoryE = 'Plumbers';
                                         });
                                         Navigator.pop(context);
                                       },
                                     ),
                                     ListTile(
-                                      title: Text('electricians'),
+                                      title: Text('Electricians'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory = 'electricians';
+                                          _selectedCategoryC = 'Electricians';
+                                          _selectedCategoryE = 'Electricians';
                                         });
                                         Navigator.pop(context);
                                       },
                                     ),
                                     ListTile(
-                                      title: Text('painter'),
+                                      title: Text('Painter'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory = 'painter';
+                                          _selectedCategoryC = 'Painter';
+                                          _selectedCategoryE = 'Painter';
                                         });
                                         Navigator.pop(context);
                                       },
                                     ),
                                     ListTile(
-                                      title: Text('tiler'),
+                                      title: Text('Tiler'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory = 'tiler';
+                                          _selectedCategoryC = 'Tiler';
+                                          _selectedCategoryE = 'Tiler';
                                         });
                                         Navigator.pop(context);
                                       },
@@ -244,7 +296,8 @@ class _WorkerRequestState extends State<WorkerRequest> {
                                       title: Text('Plastering'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory = 'Plastering';
+                                          _selectedCategoryC = 'Plastering';
+                                          _selectedCategoryE = 'Plastering';
                                         });
                                         Navigator.pop(context);
                                       },
@@ -254,7 +307,9 @@ class _WorkerRequestState extends State<WorkerRequest> {
                                           Text('Appliance Repair Technician'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory =
+                                          _selectedCategoryC =
+                                              'Appliance Repair Technician';
+                                          _selectedCategoryE =
                                               'Appliance Repair Technician';
                                         });
                                         Navigator.pop(context);
@@ -264,7 +319,9 @@ class _WorkerRequestState extends State<WorkerRequest> {
                                       title: Text('Alumetal Technicians'),
                                       onTap: () {
                                         setState(() {
-                                          _selectedCategory =
+                                          _selectedCategoryC =
+                                              'Alumetal Technicians';
+                                          _selectedCategoryE =
                                               'Alumetal Technicians';
                                         });
                                         Navigator.pop(context);
@@ -291,7 +348,8 @@ class _WorkerRequestState extends State<WorkerRequest> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              _selectedCategory ?? 'Categories',
+                              _selectedCategoryE =
+                                  _selectedCategoryC ?? 'Categories',
                               style: TextStyle(fontSize: 18),
                             ),
                             Icon(
@@ -304,7 +362,7 @@ class _WorkerRequestState extends State<WorkerRequest> {
                     ),
                   ),
                   SizedBox(
-                    height: 50,
+                    height: 30,
                   ),
                   SizedBox(
                     width: double.infinity,
@@ -313,19 +371,80 @@ class _WorkerRequestState extends State<WorkerRequest> {
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                                right: 8.0), // تحديد التباعد
+                            padding: const EdgeInsets.only(right: 8.0),
                             child: TextField(
                               controller: _nationalidController,
                               decoration: InputDecoration(
                                 labelText: 'Enter Your National ID card',
                                 labelStyle: TextStyle(
                                     color: Colors.black, fontSize: 18),
+                                errorText: _nationalidController.text.length >
+                                            0 &&
+                                        _nationalidController.text.length != 14
+                                    ? 'National-ID must be 14 digit'
+                                    : null,
                               ),
+                              keyboardType: TextInputType.number,
+                              maxLength: 14,
                             ),
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const Text(
+                    'Your City :',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 10.0),
+                  InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SizedBox(
+                            height: 400,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: cities.map((city) {
+                                  return ListTile(
+                                    title: Text(city),
+                                    onTap: () {
+                                      setState(() {
+                                        selectedCity = city;
+                                      });
+                                      Navigator.pop(context);
+                                    },
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.grey,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            selectedCity,
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            size: 35,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -373,15 +492,19 @@ class _WorkerRequestState extends State<WorkerRequest> {
                         ),
                         onPressed: () {
                           if (_nationalidController.text.isEmpty) {
-                            // Show validation message if National ID card is not entered
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content:
                                     Text('Please Enter your National ID card'),
                               ),
                             );
+                          } else if (_nationalidController.text.length != 14) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('National-ID must be 14 digit'),
+                              ),
+                            );
                           } else {
-                            // Proceed with submitting the request if National ID card is entered
                             _submitRequest();
                             Navigator.push(
                               context,
@@ -439,23 +562,6 @@ class _WorkerRequestState extends State<WorkerRequest> {
         ),
       ],
     );
-  }
-
-// Function to simulate sending request
-  void _sendRequest() {
-    setState(() {
-      _isSendingRequest = true;
-    });
-    // Simulating a response after 3 seconds
-    Future.delayed(Duration(seconds: 3), () {
-      setState(() {
-        _isSendingRequest = false;
-      });
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => BottomNavBarWorker()),
-      );
-    });
   }
 
   void showToast(String message) {

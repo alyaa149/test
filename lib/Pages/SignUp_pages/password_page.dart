@@ -1,17 +1,18 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:gradd_proj/Pages/SignUp_pages/workerRequest.dart';
-import 'package:provider/provider.dart';
-import 'package:gradd_proj/Domain/user_provider.dart';
-import 'package:gradd_proj/Domain/WokerBottomNavBar.dart';
 import 'package:gradd_proj/Domain/bottom.dart';
-import 'package:gradd_proj/Pages/Welcome.dart';
-import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/home.dart';
+import 'package:gradd_proj/Domain/user_provider.dart';
+
+import 'package:provider/provider.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+
+import 'workerRequest.dart';
 
 class PasswordPage extends StatefulWidget {
   final String email;
@@ -19,14 +20,15 @@ class PasswordPage extends StatefulWidget {
   final String lastName;
   final String phoneNumber;
   final bool isUser;
+  final File? imageFile;
 
-  PasswordPage({
-    required this.email,
-    required this.firstName,
-    required this.lastName,
-    required this.phoneNumber,
-    required this.isUser,
-  });
+  PasswordPage(
+      {required this.email,
+      required this.firstName,
+      required this.lastName,
+      required this.phoneNumber,
+      required this.isUser,
+      required this.imageFile});
 
   @override
   _PasswordPageState createState() => _PasswordPageState();
@@ -40,17 +42,10 @@ class _PasswordPageState extends State<PasswordPage> {
   String passwordError = '';
   String confirmPasswordError = '';
   bool showDel = false;
-
   get sha256 => null;
 
- void toggleLoadingAnimation() {
-  if (mounted) {
-    setState(() {
-      showDel = !showDel;
-    });
-  }
-}
-
+  static const String _defaultImageUrl =
+      'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/userlogo.png?alt=media&token=54fca04d-b125-4db4-9cf4-d96daaef1041';
 
   Future<void> _registerWithEmailAndPassword() async {
     // Validations for password length and matching passwords
@@ -78,6 +73,33 @@ class _PasswordPageState extends State<PasswordPage> {
       return;
     }
 
+    Future<String?> _uploadImageToFirebaseStorage(
+        File? imageFile, bool isUser) async {
+      try {
+        if (imageFile == null) {
+          // Use a default image if no image file is provided
+          return _defaultImageUrl;
+        }
+
+        if (!imageFile.existsSync()) {
+          throw Exception("Image file does not exist.");
+        }
+
+        final String folderName = isUser ? 'Users' : 'Workers';
+        final firebase_storage.Reference ref =
+            firebase_storage.FirebaseStorage.instance.ref().child(
+                'Profile Pictures/$folderName/${DateTime.now().millisecondsSinceEpoch}');
+
+        await ref.putFile(imageFile);
+
+        final imageUrl = await ref.getDownloadURL();
+        return imageUrl; // Return the imageURL
+      } catch (e) {
+        print('Error uploading image to Firebase Storage: $e');
+        return null;
+      }
+    }
+
     // Reset error messages
     setState(() {
       passwordError = '';
@@ -86,83 +108,101 @@ class _PasswordPageState extends State<PasswordPage> {
     });
 
     try {
-      // Create user with email and password
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: widget.email,
-        password: password,
-      );
+      // Upload image to Firebase Storage
+      String? imageUrl =
+          await _uploadImageToFirebaseStorage(widget.imageFile, widget.isUser);
 
-      // Store additional user information in Firestore
-      final String collectionName = widget.isUser ? 'users' : 'workers';
-      String hashedPassword = hashPassword(password);
-      await FirebaseFirestore.instance
-          .collection(collectionName)
-          .doc(userCredential.user!.uid)
-          .set({
-        'email': widget.email,
-        'First Name': widget.firstName,
-        'Last Name': widget.lastName,
-        'PhoneNumber': widget.phoneNumber,
-        'type': widget.isUser ? 'user' : 'worker',
-        'favorits': [],
-        'Rating': 0,
-        'about': 'userrrrr',
-        'Pic': '',
-        'NumberOfRating' : 0,
-        'reviews': {},
+      // If the user is a regular user, store additional user information in Firestore
+      if (widget.isUser) {
+        // Create user with email and password
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
+          email: widget.email,
+          password: password,
+        );
+        // Send email verification
+        await userCredential.user!.sendEmailVerification();
 
-        'packagesId' :[],
-
-      });
-
-      // Navigate to Welcome page after successful registration
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              widget.isUser ? BottomNavBarUser() : BottomNavBarWorker()
-              // WorkerRequest(email: widget.email, firstName: widget.firstName, lastName: '', isUser: widget.isUser, phoneNumber: '',),
-        ),
-      );
-
-      return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Sign Up Successful"),
-            content: Text(
-                "You have successfully signed up. Please verify your email."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+          'email': widget.email,
+          'First Name': widget.firstName ,
+          'Last Name': widget.lastName,
+          'PhoneNumber': widget.phoneNumber,
+          'type': 'user',
+          'favorits': [],
+          'Rating': 5.0,
+          'Pic': imageUrl ?? _defaultImageUrl,
+          'NumberOfRating': 0,
+          'reviews': {},
+        });
+        // Navigate to the appropriate screen after successful registration
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BottomNavBarUser(),
+          ),
+        );
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Sign Up Successful"),
+              content: Text(
+                  "You have successfully signed up. Please verify your email."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        // Navigate to WorkerRequest page if it's not a user
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WorkerRequest(
+              email: widget.email,
+              firstName: widget.firstName,
+              lastName: widget.lastName,
+              isUser: widget.isUser,
+              phoneNumber: widget.phoneNumber,
+              password: password,
+              imageUrl: imageUrl ?? _defaultImageUrl,
+            ),
+          ),
+        );
+        return;
+      }
     } catch (e) {
       // Registration failed, display error message
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Error"),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+      // Check if the widget is mounted before showing the dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Error"),
+              content: Text(e.toString()),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
 
@@ -301,36 +341,22 @@ class _PasswordPageState extends State<PasswordPage> {
                           ),
                         SizedBox(height: 20.0),
                         Center(
-                            child: ElevatedButton(
-                       onPressed: () async {
-  if (mounted) {
-    setState(() {
-      toggleLoadingAnimation(); // Start loading animation
-    });
-  }
-
-  // Perform your registration or any other operation here
-  await _registerWithEmailAndPassword();
-
-  if (mounted) {
-    setState(() {
-      toggleLoadingAnimation(); // Stop loading animation
-    });
-  }
-},
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFBBA2BF),
-                            fixedSize: Size(120, 50),
-                          ),
-                          child: Text(
-                            'Finish',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _registerWithEmailAndPassword();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFFBBA2BF),
+                              fixedSize: Size(120, 50),
+                            ),
+                            child: Text(
+                              'Next',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
-                        ),
                         ),
                       ],
                     ),

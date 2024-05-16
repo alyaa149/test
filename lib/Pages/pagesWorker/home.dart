@@ -25,9 +25,9 @@ class _HomeWorkerState extends State<HomeWorker> {
   late DocumentReference userRef;
   List<Map<String, dynamic>> UserRequest = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final String worker_id = FirebaseAuth.instance.currentUser!.uid;
+  final String worker_id = FirebaseAuth.instance.currentUser!.uid ?? 'No';
   bool result = false;
-
+  
   Future<void> processAdminsPackagesRequests() async {
     // Reference to the "adminsPackagesRequests" collection
     CollectionReference adminsPackagesRef =
@@ -58,7 +58,7 @@ class _HomeWorkerState extends State<HomeWorker> {
               document.reference.update({'isRead': true});
             } else if (!isRead && isConfirmed == "deleted") {
               showPackageDialog(
-                  "Your package request is rejected, please upload a correct screen or chat with admins!");
+                  "Your package request is rejected, please Enter a correct Reference or chat with admins!");
               document.reference.update({'isRead': true});
             }
           }
@@ -102,13 +102,13 @@ class _HomeWorkerState extends State<HomeWorker> {
               ),
               TextButton(
                 onPressed: () {
-                  // Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BottomNavBarWorker(),
-                    ),
-                  );
+                   Navigator.of(context).pop();
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => BottomNavBarWorker(),
+                  //   ),
+                  // );
                 },
                 child: Text(
                   'Ok',

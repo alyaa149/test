@@ -41,6 +41,24 @@ class _LoginState extends State<Login> {
           builder: (context) =>
               BottomNavBarUser()), // Replace HomeScreen() with your home screen widget
     );
+  // Show a dialog prompt for successful login
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Login Successful"),
+          content: Text("You have successfully logged in."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
 
    
   } on FirebaseAuthException catch (e) {

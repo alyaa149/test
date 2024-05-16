@@ -12,8 +12,8 @@ import 'package:gradd_proj/Pages/pagesUser/workerReview.dart';
 import 'package:gradd_proj/Pages/pagesWorker/workerChat.dart';
 //import 'package:gradd_proj/Pages/pagesWorker/workerchat.dart';
 import 'package:provider/provider.dart';
-import '../../Domain/customAppBar.dart';
-import '../Menu_pages/menu.dart';
+import '../Domain/customAppBar.dart';
+import 'Menu_pages/menu.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geocoding/geocoding.dart';
 

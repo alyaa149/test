@@ -94,6 +94,7 @@ dependencies:
   geocoding: ^3.0.0
   microphone: ^0.1.0
   geolocator: ^11.0.0
+  emoji_picker_flutter: ^2.2.0
 
 dev_dependencies:
   flutter_test:

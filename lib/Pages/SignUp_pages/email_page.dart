@@ -1,20 +1,22 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:gradd_proj/Domain/themeNotifier.dart';
 import 'package:gradd_proj/Domain/user_provider.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/password_page.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/phoneNo_page.dart';
-import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
 import 'package:gradd_proj/Pages/pagesUser/login.dart';
+import 'package:gradd_proj/Pages/pagesWorker/login.dart';
 import 'package:provider/provider.dart';
 
 class EmailPage extends StatefulWidget {
   final String firstName;
   final String lastName;
   final bool isUser;
+  final File? imageFile;
   EmailPage(
-      {required this.firstName, required this.lastName, required this.isUser});
+      {required this.firstName, required this.lastName, required this.isUser, required this.imageFile});
 
   @override
   _EmailPageState createState() => _EmailPageState();
@@ -23,15 +25,8 @@ class EmailPage extends StatefulWidget {
 class _EmailPageState extends State<EmailPage> {
   String email = '';
   final _formKey = GlobalKey<FormState>(); // Define form key
-
-  // void _showErrorSnackBar(String errorMessage) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text(errorMessage),
-  //       backgroundColor: Colors.red,
-  //     ),
-  //   );
-  // }
+  bool signUpWithEmail = true; // Default sign-up method is with email
+  
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +36,7 @@ class _EmailPageState extends State<EmailPage> {
         body: SingleChildScrollView(
           child: SizedBox(
             width: 700,
-            height: 700,
+            height: 800,
             child: Stack(
               children: [
                 // Background Image
@@ -75,7 +70,7 @@ class _EmailPageState extends State<EmailPage> {
                 Center(
                   child: Container(
                     width: 320,
-                    height: 290,
+                    height: 315,
                     decoration: BoxDecoration(
                       color: Color(0xFFF5F3F3),
                       borderRadius: BorderRadius.circular(20.0),
@@ -85,13 +80,14 @@ class _EmailPageState extends State<EmailPage> {
                       ),
                     ),
                     padding: EdgeInsets.all(20),
-                    child: Form( // Wrap with Form widget
+                    child: Form(
+                      // Wrap with Form widget
                       key: _formKey, // Assign form key
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            'Enter your email address',
+                            'Enter your ${signUpWithEmail ? 'email' : 'phone number'}',
                             style: TextStyle(
                               fontSize: 18.0,
                               fontWeight: FontWeight.bold,
@@ -99,29 +95,37 @@ class _EmailPageState extends State<EmailPage> {
                             ),
                           ),
                           SizedBox(height: 20.0),
-                          TextFormField(
-                            onChanged: (value) {
-                              setState(() {
-                                email = value;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email address';
-                              }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                  .hasMatch(value)) {
-                                return 'Please enter a valid email address';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              labelText: "Email",
-                              prefixIcon: Icon(Icons.email),
-                            ),
-                          ),
+                          signUpWithEmail
+                              ? TextFormField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      email = value;
+                                    });
+                                  },
+                                  // Remove validator to allow any input
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    labelText: "Email",
+                                    prefixIcon: Icon(Icons.email),
+                                  ),
+                                )
+                              : TextFormField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      email = value;
+                                    });
+                                  },
+                                  // Remove validator to allow any input
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    labelText: "Phone Number",
+                                    prefixIcon: Icon(Icons.phone),
+                                  ),
+                                ),
                           SizedBox(height: 20.0),
                           Center(
                             child: Column(
@@ -129,22 +133,40 @@ class _EmailPageState extends State<EmailPage> {
                                 ElevatedButton(
                                   onPressed: () {
                                     if (_formKey.currentState!.validate()) {
-                                      // Navigate to the next page or perform other actions with collected data
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PhoneNumberPage(
-                                            firstName: widget.firstName,
-                                            lastName: widget.lastName,
-                                            email: email,
-                                            isUser: widget.isUser,
+                                      if (signUpWithEmail) {
+                                        // Navigate to the next page for email sign-up
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                PhoneNumberPage(
+                                              firstName: widget.firstName,
+                                              lastName: widget.lastName,
+                                              email: email,
+                                              isUser: widget.isUser,
+                                              imageFile: widget.imageFile,
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    } else {
-                                      // Show snackbar if form validation fails
-                                      // _showErrorSnackBar(
-                                      //     'Please enter a valid email address');
+                                        );
+                                      } else {
+                                        // Combine phone number with domain and navigate to the next page
+                                        String phoneNumberWithEmail =
+                                            email + '@domain.com';
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                PasswordPage(
+                                              firstName: widget.firstName,
+                                              lastName: widget.lastName,
+                                              email: phoneNumberWithEmail,
+                                              isUser: widget.isUser,
+                                              phoneNumber: email,
+                                              imageFile: widget.imageFile,
+                                            ),
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
@@ -161,21 +183,43 @@ class _EmailPageState extends State<EmailPage> {
                                   height: 10,
                                 ),
                                 GestureDetector(
-                                  onTap: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Login()),
-                                    );
+  onTap: () {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => isUser ? Login() : LoginWorker(),
+      ),
+    );
+  },
+  child: Text(
+    'Already have an account? ${isUser ? 'Login' : 'Login as Worker'}',
+    style: TextStyle(
+      fontFamily: "Raleway",
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
+
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      signUpWithEmail = !signUpWithEmail;
+                                    });
                                   },
                                   child: Text(
-                                    'Already have an account? Login',
-                                    style: TextStyle(
-                                      fontFamily: "Raleway",
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                    ),
+                                    signUpWithEmail
+                                        ? 'Or Sign up with phone number'
+                                        : 'Or Sign up with email',
+                                        style: TextStyle(      fontFamily: "Raleway",
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+      decoration: TextDecoration.underline,)
+                                        ,
                                   ),
                                 ),
                               ],

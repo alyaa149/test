@@ -1,225 +1,338 @@
-
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
-import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 import '../../Domain/customAppBar.dart';
+import '../Menu_pages/menu.dart';
 import 'commentsPage.dart';
 import 'createPost.dart';
-
 
 class Posts extends StatefulWidget {
   const Posts({Key? key}) : super(key: key);
 
   @override
-  _CreatePostState createState() => _CreatePostState();
+  _PostsState createState() => _PostsState();
 }
 
-class _CreatePostState extends State<Posts> {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+class _PostsState extends State<Posts> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late bool isLiked;
+
+  @override
+  void initState() {
+    super.initState();
+    isLiked = false;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllPosts() async {
+    List<Map<String, dynamic>> postsData = [];
+
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('Posts')
+          .orderBy('Date', descending: true)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
+          Map<String, dynamic>? postData =
+              documentSnapshot.data() as Map<String, dynamic>?;
+
+          if (postData != null) {
+            String postId = documentSnapshot.id;
+            postData['postId'] = postId;
+
+            // Retrieve userId from post data
+            String? userId = postData['userId'];
+
+            // Fetch user document from 'users' collection based on userId
+            DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .get();
+
+            // Get profile picture URL from user document
+            String proPic =
+                'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'; // Default profile picture URL
+
+            // Check if user document exists and contains 'Pic' field
+            if (userSnapshot.exists) {
+              Map<String, dynamic>? userData =
+                  userSnapshot.data() as Map<String, dynamic>?;
+
+              if (userData != null && userData.containsKey('Pic')) {
+                proPic = userData['Pic'];
+              }
+            }
+
+            // Add profile picture URL to postData
+            postData['proPic'] = proPic;
+
+            // Add modified postData to postsData list
+            postsData.add(postData);
+          }
+        }
+      } else {
+        print('No documents found in the collection');
+      }
+    } catch (e) {
+      print('Error getting documents: $e');
+    }
+
+    // Sort postsData by date in descending order
+    postsData.sort(
+        (a, b) => (b['Date'] as Timestamp).compareTo(a['Date'] as Timestamp));
+
+    print('Posts Data: $postsData'); // Print postsData for debugging
+    return postsData;
+  }
+
+  Future<void> showEditDialog(
+      BuildContext context, String postId, String currentContent) async {
+    TextEditingController contentController =
+        TextEditingController(text: currentContent);
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap a button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Post'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: contentController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: 'Edit your post',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('Posts')
+                    .doc(postId)
+                    .update({
+                  'description': contentController.text,
+                });
+                Navigator.of(context).pop();
+                setState(() {}); // Refresh the UI to reflect the changes
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await FirebaseFirestore.instance.collection('Posts').doc(postId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Post deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete post')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-         key: _scaffoldKey,
-        appBar: 
-          CustomAppBar(scaffoldKey: _scaffoldKey,showSearchBox: false,),
-        drawer: Menu(scaffoldKey: _scaffoldKey,),
-        body: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Stack(
-            children: [
-    
-              SizedBox(
-                height: 35,
-              ),
-                //post layer Open
-              ListView(
-                padding: EdgeInsets.symmetric(vertical: 100),
-                children: [
-                  FriendPost(
-                    proPic: 'assets/images/profile.png',
-                    proName: 'Ali Omar',
-                    Date: ' 9 AM',
-                    postText:
-                        'السلام عليكم, حد عارف ازاي انضف خرطوم مياه الصرف للحوض',
-                    context: context,
-                  ),
-                  SizedBox(height: 20),
-                  FriendPost(
-                    proPic: 'assets/images/profile.png',
-                    proName: 'Mohamed Khaled',
-                    Date: 'Today at 11:30 PM',
-                    postText:
-                        'اهلا وسهلا, عندي مشكلة في حنفية المطبخ اريد سباك',
-                    context: context,
-                  ),
-                  SizedBox(height: 20),
-                  FriendPost(
-                    proPic: 'assets/images/profile.png',
-                    proName: 'Ahmed Mohamed',
-                    Date: 'Yesterday at 11:30 AM',
-                    postText:
-                        'السلام عليكم, حد عارف ازاي انضف خرطوم مياه الصرف للحوض',
-                    context: context,
-                  ),
-                  SizedBox(height: 20),
-                  FriendPost(
-                    proPic: 'assets/images/profile.png',
-                    proName: 'Amira samir',
-                    Date: 'Yesterday at 8:30 AM',
-                    postText:
-                        'اهلا وسهلا, عندي مشكلة في حنفية المطبخ اريد سباك',
-                    context: context,
-                  ),
-                  SizedBox(height: 20),
-                  FriendPost(
-                    proPic: 'assets/images/profile.png',
-                    proName: 'Marwan Mostafa',
-                    Date: 'Monday at 7:30 AM',
-                    postText:
-                        'السلام عليكم, حد عارف ازاي انضف خرطوم مياه الصرف للحوض',
-                    context: context,
-                  ),
-                ],
-              ),
-              //post layer
-            ],
-          ),
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: CustomAppBar(scaffoldKey: _scaffoldKey, showSearchBox: false),
+      body: SafeArea(
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: getAllPosts(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+              List<Map<String, dynamic>> postData = snapshot.data!;
+              return ListView.builder(
+                itemCount: postData.length,
+                itemBuilder: (context, index) {
+                  Map<String, dynamic> post = postData[index];
+                  return Column(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(
+                            top: 20, bottom: 10, left: 10, right: 10),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(15.0),
+                          color: Color.fromARGB(31, 196, 193, 193),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              width: 50.0,
+                              height: 50.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey),
+                                image: DecorationImage(
+                                  image: NetworkImage(post['proPic'] ?? ''),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        post['username'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: 17.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      // Check if the current user is the owner of the post
+                                      if (post['userId'] == currentUser?.uid)
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(Icons.edit,
+                                                  size: 20,
+                                                  color: Colors.black),
+                                              onPressed: () {
+                                                showEditDialog(
+                                                    context,
+                                                    post['postId'] ?? '',
+                                                    post['description'] ?? '');
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: Icon(Icons.delete,
+                                                  size: 20, color: Colors.red),
+                                              onPressed: () {
+                                                deletePost(
+                                                    post['postId'] ?? '');
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                  Text(
+                                    post['Date'] != null
+                                        ? DateFormat.yMMMd().format(
+                                            (post['Date'] as Timestamp)
+                                                .toDate())
+                                        : '',
+                                    style: TextStyle(fontSize: 12.0),
+                                  ),
+                                  SizedBox(height: 30.0),
+                                  Text(
+                                    post['description'] ?? '',
+                                    style: TextStyle(fontSize: 15.0),
+                                  ),
+                                  SizedBox(height: 25.0),
+                                  // Display the post image if it exists
+                                  if (post['imageUrl'] != null &&
+                                      post['imageUrl'].isNotEmpty)
+                                    Image.network(
+                                      post['imageUrl'],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  SizedBox(height: 25.0),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            IconButton(
+                              icon: Icon(
+                                Icons.thumb_up,
+                                size: 20,
+                                color: isLiked
+                                    ? Colors.blue
+                                    : Color.fromARGB(255, 171, 185, 197),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  isLiked = !isLiked;
+                                });
+                              },
+                            ),
+                            SizedBox(width: 5),
+                            Text('Like'),
+                            SizedBox(width: 40),
+                            IconButton(
+                              icon: Icon(Icons.comment,
+                                  size: 20, color: Colors.black),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CommentsPage(
+                                      postId: post['postId'] ?? '',
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(width: 5),
+                            Text('Comment'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else {
+              return Center(child: Text('No posts available'));
+            }
+          },
         ),
-         floatingActionButton: FloatingActionButton(
+      ),
+      drawer: Menu(scaffoldKey: _scaffoldKey),
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => const CreatePost()));
         },
         backgroundColor: const Color(0xFFBBA2BF),
         shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_circle_outline_rounded),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      ),
-    );
-  }
-}
-
-class FriendPost extends StatefulWidget {
-  final String proPic;
-  final String proName;
-  final String Date;
-  final String postText;
-  final BuildContext context;
-  const FriendPost(
-      {Key? key,
-      required this.proPic,
-      required this.proName,
-      required this.Date,
-      required this.postText,
-      required this.context})
-      : super(key: key);
-
-  @override
-  _FriendPostState createState() => _FriendPostState();
-}
-
-class _FriendPostState extends State<FriendPost> {
-  bool isLiked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(15.0),
-            color: Color.fromARGB(31, 196, 193, 193),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                width: 60.0,
-                height: 60.0,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.brown),
-                  image: DecorationImage(
-                    image: AssetImage(widget.proPic),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              SizedBox(width: 10.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      widget.proName,
-                      style: TextStyle(
-                        fontSize: 17.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      widget.Date,
-                      style: TextStyle(fontSize: 12.0),
-                    ),
-                    SizedBox(height: 30.0),
-                    Text(
-                      widget.postText,
-                      style: TextStyle(fontSize: 15.0),
-                    ),
-                    SizedBox(height: 25.0),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.thumb_up,
-                  size: 20,
-                  color: isLiked
-                      ? Colors.blue
-                      : Color.fromARGB(255, 171, 185, 197),
-                ),
-                onPressed: () {
-                  setState(() {
-                    isLiked = !isLiked;
-                  });
-                },
-              ),
-              SizedBox(width: 5),
-              Text('Like'),
-              SizedBox(width: 40),
-              IconButton(
-                icon: Icon(Icons.comment, size: 20, color: Colors.black),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CommentsPage()),
-                  );
-                },
-              ),
-              SizedBox(width: 5),
-              Text('Comment'),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

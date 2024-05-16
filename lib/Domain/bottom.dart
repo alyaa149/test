@@ -15,6 +15,8 @@ import 'package:gradd_proj/Pages/pagesUser/BNavBarPages/notificationsUser.dart';
 
 
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+
+import '../Pages/pagesUser/BNavBarPages/adminUserChar.dart';
 // Main Navigation Screen
 class BottomNavBarUser extends StatefulWidget {
   const BottomNavBarUser({Key? key}) : super(key: key);
@@ -30,7 +32,7 @@ class _BottomNavBarUserState extends State<BottomNavBarUser> {
     return  [
        const Home(),
        Favorites(),
-       const AdminChat(),
+        UserAdminChat(),
        Notifiction(),
        const Posts(),
     ];

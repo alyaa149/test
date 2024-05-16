@@ -7,7 +7,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gradd_proj/Domain/WokerBottomNavBar.dart';
 import 'package:gradd_proj/Domain/customAppBar.dart';
 import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
-import 'package:gradd_proj/Pages/pagesUser/toqaHistoryUser.dart';
+import 'package:gradd_proj/Pages/toqaHistoryUser.dart';
 import 'package:gradd_proj/Pages/pagesWorker/home.dart';
 import 'package:gradd_proj/Pages/pagesWorker/workerChat.dart';
 

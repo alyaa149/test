@@ -11,12 +11,18 @@ import 'package:gradd_proj/Pages/Subscription_Pages/packagesPage.dart';
 import 'package:gradd_proj/Pages/pagesWorker/home.dart';
 import 'package:image_picker/image_picker.dart';
 
-class PackageDetailsPage extends StatelessWidget {
+class PackageDetailsPage extends StatefulWidget {
   final SubscriptionPackage? package;
-  final String worker_id = FirebaseAuth.instance.currentUser!.uid;
-  String photoUrl = '';
 
   PackageDetailsPage({Key? key, this.package}) : super(key: key);
+
+  @override
+  State<PackageDetailsPage> createState() => _PackageDetailsPageState();
+}
+
+class _PackageDetailsPageState extends State<PackageDetailsPage> {
+  final String worker_id = FirebaseAuth.instance.currentUser!.uid;
+  String? reference;
 
   void waitingDialog(BuildContext context) {
     showDialog(
@@ -36,7 +42,7 @@ class PackageDetailsPage extends StatelessWidget {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.pushReplacement(
+                  Navigator.pop(
                     context,
                     MaterialPageRoute(
                       builder: (context) => BottomNavBarWorker(),
@@ -54,48 +60,8 @@ class PackageDetailsPage extends StatelessWidget {
     );
   }
 
-
-
-  Future<void> _uploadPhoto(BuildContext context) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      File file = File(pickedFile.path);
-      String fileName = DateTime.now().toString();
-      String extension =
-          pickedFile.path.split('.').last; // Extract file extension
-
-      try {
-        // Upload the file to Firestore Storage with the original file extension
-        await firebase_storage.FirebaseStorage.instance
-            .ref('Subscription Screens/$fileName.$extension')
-            .putFile(file);
-        // Get the download URL of the uploaded photo
-        photoUrl = await firebase_storage.FirebaseStorage.instance
-            .ref('Subscription Screens/$fileName.$extension')
-            .getDownloadURL();
-
-        // Once uploaded, show a success message or navigate to the next screen
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Photo uploaded successfully!'),
-        ));
-      } catch (e) {
-        // Handle errors
-        print('Error uploading photo: $e');
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to upload photo. Please try again later.'),
-        ));
-      }
-    } else {
-      // User canceled image selection
-    }
-  }
-
- 
-
   Future<void> addPackageRequest(
-      String packageId, String workerId, String photoUrl) async {
+      String packageId, String workerId, String? refernce) async {
     try {
       // Get a reference to the Firestore database
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -108,9 +74,10 @@ class PackageDetailsPage extends StatelessWidget {
       await documentReference.set({
         'Package_id': packageId,
         'worker_id': workerId,
-        'PhotoUrl': photoUrl,
-        'isConfirmed' : "pending",
-          'isRead' : false,
+        'Reference': refernce,
+        'isConfirmed': "pending",
+        'isRead': false,
+         'Date': FieldValue.serverTimestamp(),
         // You can add more fields here if needed
       });
 
@@ -126,7 +93,7 @@ class PackageDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          package?.name ?? 'Package Details',
+          widget.package?.name ?? 'Package Details',
           style: TextStyle(
             fontSize: 25,
             fontFamily: "Quantico",
@@ -135,118 +102,110 @@ class PackageDetailsPage extends StatelessWidget {
         ),
         backgroundColor: Color(0xFFBBA2BF),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'YOU CAN SUBSCRIBE WITH 2 WAYS:',
-              style: TextStyle(
-                fontSize: 18.0,
-                color: Colors.black87,
-                fontFamily: "Quantico",
-              ),
-            ),
-            SizedBox(height: 25),
-            Text(
-              '1) Vodafone cash:',
-              style: TextStyle(
-                  fontSize: 16.0,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'YOU CAN SUBSCRIBE WITH 2 WAYS:',
+                style: TextStyle(
+                  fontSize: 18.0,
                   color: Colors.black87,
                   fontFamily: "Quantico",
-                  decoration: TextDecoration.underline),
-            ),
-            Text(
-              '01289453775',
-              style: TextStyle(
-                fontSize: 17.0,
-                color: Colors.black54,
-                fontFamily: "Quantico",
-              ),
-            ),
-            SizedBox(height: 25),
-            Text(
-              '2) Insta bay:',
-              style: TextStyle(
-                  fontSize: 17.0,
-                  color: Colors.black87,
-                  fontFamily: "Quantico",
-                  decoration: TextDecoration.underline),
-            ),
-            Text(
-              '54953',
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.black54,
-                fontFamily: "Quantico",
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _uploadPhoto(context),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: Colors.black45,
-                  ),
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.camera_alt,
+              SizedBox(height: 25),
+              Text(
+                '1) Vodafone cash:',
+                style: TextStyle(
+                    fontSize: 16.0,
                     color: Colors.black87,
+                    fontFamily: "Quantico",
+                    decoration: TextDecoration.underline),
+              ),
+              Text(
+                '01289453775',
+                style: TextStyle(
+                  fontSize: 17.0,
+                  color: Colors.black54,
+                  fontFamily: "Quantico",
+                ),
+              ),
+              SizedBox(height: 25),
+              Text(
+                '2) Insta bay:',
+                style: TextStyle(
+                    fontSize: 17.0,
+                    color: Colors.black87,
+                    fontFamily: "Quantico",
+                    decoration: TextDecoration.underline),
+              ),
+              Text(
+                '54953',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black54,
+                  fontFamily: "Quantico",
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Enter the Reference (رقم العملية):',
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 20.0),
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                    // Update the reference variable with the value entered in the TextField
+                    reference = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  SizedBox(width: 10),
-                  Text(
-                    'Upload a screen to Confirm',
+                  labelText: "reference",
+                  prefixIcon: Icon(Icons.price_check),
+                ),
+              ),
+              SizedBox(
+                height: 150,
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    //  addPackageIdIfNeeded(package!.documentId!);
+                    waitingDialog(context);
+                    addPackageRequest(
+                        widget.package!.documentId!, worker_id, reference);
+
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => BottomNavBarWorker()));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFBBA2BF),
+                  ),
+                  child: Text(
+                    'Get new package !',
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      fontSize: 17,
+                      color: Colors.grey[850],
                       fontFamily: "Quantico",
                     ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 150,
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                //  addPackageIdIfNeeded(package!.documentId!);
-                  waitingDialog(context);
-                  addPackageRequest(
-                    package!.documentId!,
-                    worker_id,
-                    photoUrl
-                  );
-
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => BottomNavBarWorker()));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFBBA2BF),
-                ),
-                child: Text(
-                  'Get new package !',
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.grey[850],
-                    fontFamily: "Quantico",
-                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
