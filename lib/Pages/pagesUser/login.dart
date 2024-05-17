@@ -1,12 +1,9 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gradd_proj/Domain/bottom.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
 import 'package:gradd_proj/Pages/pagesUser/signup.dart';
-import 'package:gradd_proj/Pages/tesssssst.dart';
 import 'BNavBarPages/home.dart';
 
 class Login extends StatefulWidget {
@@ -23,17 +20,34 @@ class _LoginState extends State<Login> {
 
   Future<void> _signInWithEmailAndPassword(BuildContext context) async {
   try {
-    //Check if email and password are empty
-    if(_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty){
-      throw FirebaseAuthException(code: 'empty-email-password', message: 'Please enter both email and password');
+    // Check if email or phone number and password are empty
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
+      throw FirebaseAuthException(
+          code: 'empty-email-password',
+          message: 'Please enter both email and password');
     }
 
-    final UserCredential userCredential =
-    await _auth.signInWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-
+    if (_emailController.text.contains('@')) {
+      // Email authentication
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    } else {
+      // Phone number authentication
+      // Concatenate '@domain.com' to the phone number
+      final phoneNumberWithEmail =
+          '${_emailController.text.trim()}@domain.com';
+      // Perform phone number authentication using Firebase
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: phoneNumberWithEmail,
+        password: _passwordController.text.trim(),
+      );
+    }
+    
     // Navigate to home screen if login is successful
     Navigator.pushReplacement(
       context,
@@ -41,7 +55,7 @@ class _LoginState extends State<Login> {
           builder: (context) =>
               BottomNavBarUser()), // Replace HomeScreen() with your home screen widget
     );
-  // Show a dialog prompt for successful login
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -60,7 +74,6 @@ class _LoginState extends State<Login> {
       },
     );
 
-   
   } on FirebaseAuthException catch (e) {
     // Handle login errors
     String errorMessage = 'Failed to Sign in';
@@ -161,7 +174,7 @@ class _LoginState extends State<Login> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Email:',
+                              'Email or Phone Number:',
                               style: TextStyle(
                                 fontFamily: "Quando",
                                 fontWeight: FontWeight.bold,
@@ -172,7 +185,7 @@ class _LoginState extends State<Login> {
                           TextField(
                             controller: _emailController,
                             decoration: InputDecoration(
-                              labelText: "Email",
+                              labelText: "Email or Phone Number",
                               prefixIcon: Icon(Icons.person),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
@@ -206,7 +219,7 @@ class _LoginState extends State<Login> {
                               EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
-                          SizedBox(height: 40),
+                          SizedBox(height: 15),
                           ElevatedButton(
                             onPressed: () {
                               _signInWithEmailAndPassword(context);

@@ -6,6 +6,8 @@ import 'package:gradd_proj/Pages/pagesWorker/home.dart';
 import 'package:gradd_proj/Pages/pagesWorker/notificationsWorker.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
+import '../Pages/pagesWorker/workerAdminChat.dart';
+
 // Main Navigation Screen
 class BottomNavBarWorker extends StatefulWidget {
   const BottomNavBarWorker({Key? key}) : super(key: key);
@@ -20,7 +22,7 @@ class _BottomNavBarWorkerState extends State<BottomNavBarWorker> {
   List<Widget> screens() {
     return [
       HomeWorker(),
-      const AdminChat(),
+      const WorkerAdminChat(),
       alartsWorker(),
       const Posts(),
     ];

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradd_proj/Pages/Menu_pages/History.dart';
+import 'package:gradd_proj/Pages/pagesWorker/workerInfo.dart';
 
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
@@ -161,14 +162,15 @@ class Menu extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 13),
                   ),
                   onTap: () {
-                    // Check user role here
-                    bool isUser = true; // Replace with actual user role check
+                    // // Check user role here
+                    // bool isUser = true; // Replace with actual user role check
 
                     if (isUser) {
                       PersistentNavBarNavigator.pushNewScreen(context,
-                          screen: const user_worker_info(), withNavBar: false);
+                          screen: const userinfo(), withNavBar: false);
                     } else {
-                      // Handle worker profile tap
+                        PersistentNavBarNavigator.pushNewScreen(context,
+                          screen: const Workererinfo(), withNavBar: false);
                     }
                   },
                 ),

@@ -1,13 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gradd_proj/Domain/customAppBar.dart';
+import 'package:gradd_proj/Domain/user_provider.dart';
+import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
+import 'package:gradd_proj/Pages/SocialMedia_pages/commentsPage.dart';
+import 'package:gradd_proj/Pages/SocialMedia_pages/createPost.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-
-import '../../Domain/customAppBar.dart';
-import '../Menu_pages/menu.dart';
-import 'commentsPage.dart';
-import 'createPost.dart';
+import 'package:provider/provider.dart';
 
 class Posts extends StatefulWidget {
   const Posts({Key? key}) : super(key: key);
@@ -19,6 +20,7 @@ class Posts extends StatefulWidget {
 class _PostsState extends State<Posts> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late bool isLiked;
+  final currentUser = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -46,10 +48,16 @@ class _PostsState extends State<Posts> {
 
             // Retrieve userId from post data
             String? userId = postData['userId'];
+            final userProvider =
+                Provider.of<UserProvider>(context, listen: false);
+            bool isUser = userProvider.isUser;
+
+            // Determine the collection path based on the isUser flag
+            String collectionPath = isUser ? 'users' : 'workers';
 
             // Fetch user document from 'users' collection based on userId
             DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-                .collection('users')
+                .collection(collectionPath)
                 .doc(userId)
                 .get();
 
@@ -155,7 +163,6 @@ class _PostsState extends State<Posts> {
   @override
   Widget build(BuildContext context) {
     final User? currentUser = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(scaffoldKey: _scaffoldKey, showSearchBox: false),
@@ -206,7 +213,7 @@ class _PostsState extends State<Posts> {
                                 children: <Widget>[
                                   Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.start,
                                     children: [
                                       Text(
                                         post['username'] ?? '',
@@ -215,31 +222,29 @@ class _PostsState extends State<Posts> {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      // Check if the current user is the owner of the post
+                                      SizedBox(width: 120,),
                                       if (post['userId'] == currentUser?.uid)
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(Icons.edit,
-                                                  size: 20,
-                                                  color: Colors.black),
-                                              onPressed: () {
-                                                showEditDialog(
-                                                    context,
-                                                    post['postId'] ?? '',
-                                                    post['description'] ?? '');
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: Icon(Icons.delete,
-                                                  size: 20, color: Colors.red),
-                                              onPressed: () {
-                                                deletePost(
-                                                    post['postId'] ?? '');
-                                              },
-                                            ),
-                                          ],
-                                        ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.edit,
+                                                size: 20, color: Colors.black),
+                                            onPressed: () {
+                                              showEditDialog(
+                                                  context,
+                                                  post['postId'] ?? '',
+                                                  post['description'] ?? '');
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.delete,
+                                            size: 20, color: Colors.red),
+                                        onPressed: () {
+                                          deletePost(post['postId'] ?? '');
+                                        },
+                                      ),
                                     ],
                                   ),
                                   Text(

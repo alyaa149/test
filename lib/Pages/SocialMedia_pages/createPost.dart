@@ -5,9 +5,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gradd_proj/Domain/customAppBar.dart';
+import 'package:gradd_proj/Domain/user_provider.dart';
 import 'package:gradd_proj/Pages/SocialMedia_pages/posts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:provider/provider.dart';
 
 class CreatePost extends StatefulWidget {
   const CreatePost({Key? key}) : super(key: key);
@@ -21,26 +23,35 @@ class _CreatePostState extends State<CreatePost> {
   TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   String? _pickedImagePath;
-  String? _pickedImagePath1;
   final ImagePicker _imagePicker = ImagePicker();
   bool _uploadingImage = false;
   late File _pickedImage;
+  String? _pickedImagePath1;
   File? _selectedImage;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final currentUser = FirebaseAuth.instance;
 
-  Future<String> _fetchProfilePicUrl() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      return 'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'; // Return default profile picture URL if the user is not authenticated
-    }
 
-    final userDocumentSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser.uid)
-        .get();
+Future<String> _fetchProfilePicUrl() async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser == null) {
+    return 'https://firebasestorage.googleapis.com/v0/b/mrhouse-daf9c.appspot.com/o/Profile%20Pictures%2Fprofile.png?alt=media&token=db788fd3-0ec9-4e9a-9ddb-f22e2d5b5518'; // Return default profile picture URL if the user is not authenticated
+  }
 
-    if (userDocumentSnapshot.exists) {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  bool isUser = userProvider.isUser;
+
+  // Determine the collection path based on the isUser flag
+  String collectionPath = isUser ? 'users' : 'workers';
+
+  final userDocumentSnapshot = await FirebaseFirestore.instance
+  .collection(collectionPath)
+  .doc(currentUser.uid)
+  .get();
+
+  if (userDocumentSnapshot.exists) {
       final userData = userDocumentSnapshot.data();
+      print('Fetched user data: $userData');
       if (userData != null && userData.containsKey('Pic')) {
         return userData['Pic'] as String;
       } else {
@@ -52,41 +63,44 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   Future<void> _submitRequest() async {
-    final String description = _descriptionController.text;
-    final username = await _fetchUsernameFromFirestore();
-    final userId =
-        FirebaseAuth.instance.currentUser?.uid; // Get the current user's ID
-    String imageUrl1 = '';
-    final imageUrl = _pickedImagePath ?? '';
-    final imagePath = _pickedImagePath1 ?? '';
-    final dateTimestamp = DateTime.now();
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  bool isUser = userProvider.isUser;
 
-    final requestData = {
-      'description': description,
-      'username': username,
-      'userId': userId, // Add the current user's ID to the requestData
-      'gallerypic': imageUrl,
-      'camerapic': imagePath,
-      'Date': dateTimestamp,
-    };
+  final String description = _descriptionController.text;
+  final username = await _fetchUsernameFromFirestore();
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+  String imageUrl1 = '';
+  final imageUrl = _pickedImagePath ?? '';
+  final imagePath = _pickedImagePath1 ?? '';
+  final dateTimestamp = DateTime.now();
 
-    try {
-      await FirebaseFirestore.instance.collection('Posts').add(requestData);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Posted successfully')),
-      );
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Posts(),
-        ),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to Post')),
-      );
-    }
+  final requestData = {
+    'description': description,
+    'username': username,
+    'userId': userId,
+    'imageUrl': imageUrl,
+    'camerapic': imagePath,
+    'Date': dateTimestamp,
+  };
+
+  try {
+    await FirebaseFirestore.instance.collection('Posts').add(requestData);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Posted successfully')),
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Posts(),
+      ),
+    );
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to Post')),
+    );
   }
+}
+
 
   Future<String?> uploadImageToFirebase(File imageFile) async {
     try {
@@ -111,20 +125,25 @@ class _CreatePostState extends State<CreatePost> {
     }
   }
 
-  Future<String> _fetchUsernameFromFirestore() async {
+Future<String> _fetchUsernameFromFirestore() async {
     // Fetch the usernames from Firestore using the current user's document ID
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       return 'Anonymous'; // Return 'Anonymous' if the user is not authenticated
     }
 
-    final userDocumentSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser
-            .uid) // Assuming the document ID is the same as the user's UID
-        .get();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+  bool isUser = userProvider.isUser;
 
-    if (userDocumentSnapshot.exists) {
+  // Determine the collection path based on the isUser flag
+  String collectionPath = isUser ? 'users' : 'workers';
+
+  final userDocumentSnapshot = await FirebaseFirestore.instance
+  .collection(collectionPath)
+  .doc(currentUser.uid)
+  .get();
+
+  if(userDocumentSnapshot.exists){
       // If the user document exists, get the usernames from it
       final username1 = userDocumentSnapshot.data()?['First Name'] as String;
       final username2 = userDocumentSnapshot.data()?['Last Name'] as String;
@@ -137,6 +156,10 @@ class _CreatePostState extends State<CreatePost> {
       return 'Anonymous'; // Return 'Anonymous' if the user document does not exist
     }
   }
+
+
+
+
 
   Future<void> _handleImageSelectionAndUpload() async {
     final pickedImage =
@@ -201,7 +224,7 @@ class _CreatePostState extends State<CreatePost> {
         final imageUrl =
             await ref.getDownloadURL(); // الحصول على رابط تنزيل الصورة
         setState(() {
-          _pickedImagePath1 = imageUrl; // تحديث مسار الصورة المختارة بالرابط
+          _pickedImagePath = imageUrl; // تحديث مسار الصورة المختارة بالرابط
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -224,6 +247,8 @@ class _CreatePostState extends State<CreatePost> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    bool isUser = userProvider.isUser;
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
@@ -242,7 +267,7 @@ class _CreatePostState extends State<CreatePost> {
               ListView(
                 padding: EdgeInsets.symmetric(vertical: 100),
                 children: [
-                  FutureBuilder<List<String>>(
+                    FutureBuilder<List<String>>(
                     future: Future.wait(
                         [_fetchProfilePicUrl(), _fetchUsernameFromFirestore()]),
                     builder: (context, snapshot) {
@@ -256,6 +281,7 @@ class _CreatePostState extends State<CreatePost> {
                         // If the data is successfully fetched, extract profile pic URL and username
                         final List<String> data = snapshot.data!;
                         final String proPic = data[0];
+                        print('THIS IS THE PROPIC: $proPic');
                         final String proName = data[1];
 
                         // Pass profile pic URL and username to the FriendPost widget
@@ -364,7 +390,7 @@ class _CreatePostState extends State<CreatePost> {
                           width: 100, // تحديد العرض حسب الحاجة
                           height: 50, // تحديد الارتفاع حسب الحاجة
                           child: TextButton(
-                            onPressed: _submitRequest,
+                            onPressed:  _submitRequest,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFFBBA2BF),
                             ), // تغيير لون الزر

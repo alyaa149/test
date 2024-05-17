@@ -1,29 +1,23 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
+import 'package:gradd_proj/Domain/customAppBar.dart';
+import 'package:gradd_proj/Pages/Menu_pages/menu.dart';
 
-import '../../Domain/customAppBar.dart';
-import '../../Domain/user_provider.dart';
-import '../Menu_pages/menu.dart';
-import 'History.dart';
-
-class user_worker_info extends StatefulWidget {
-  const user_worker_info({Key? key}) : super(key: key);
+class userinfo extends StatefulWidget {
+  const userinfo({Key? key}) : super(key: key);
 
   @override
-  _user_worker_infoState createState() => _user_worker_infoState();
+  _userinfoState createState() => _userinfoState();
 }
 
-class _user_worker_infoState extends State<user_worker_info> {
+class _userinfoState extends State<userinfo> {
   final currentUser = FirebaseAuth.instance.currentUser!;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
-    bool isUser = Provider.of<UserProvider>(context).isUser;
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
@@ -31,14 +25,9 @@ class _user_worker_infoState extends State<user_worker_info> {
           scaffoldKey: _scaffoldKey,
           showSearchBox: false,
         ),
-        drawer: Menu(
-          scaffoldKey: _scaffoldKey,
-        ),
         body: FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance
-              .collection(isUser
-                  ? 'users'
-                  : 'workers') // Check user type and choose collection accordingly
+              .collection('users')
               .doc(currentUser.uid)
               .get(),
           builder: (context, snapshot) {
@@ -50,138 +39,159 @@ class _user_worker_infoState extends State<user_worker_info> {
               final userData = snapshot.data!.data() as Map<String, dynamic>?;
 
               if (userData != null) {
-                final name = userData['First Name'] ?? 'No Data';
+                final fname = userData['First Name'] ?? 'No Data';
+                final lname = userData['Last Name'] ?? '';
                 final email = userData['email'] ?? 'No Data';
                 final phoneNumber = userData['PhoneNumber'] ?? 'No Data';
                 final about = userData['about'] ?? 'No Data';
-                double rating = userData['Rating'].toDouble();
-                int roundedRating = rating.round();
+                final rating = userData['Rating'] ?? 0;
                 final ProfilePhotoURL = userData['Pic'];
 
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                return SizedBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 55,
-                        // backgroundImage: ProfilePhotoURL != null
-                        //   ? NetworkImage(ProfilePhotoURL)
-                        //   : AssetImage("assets/images/profile.png"),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(left: 16),
-                            child: ListTile(
-                              leading: Icon(Icons.info),
-                              title: Text(
-                                "About",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              subtitle: Text(
-                                about,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          if (phoneNumber != 'No Data')
-                            Container(
-                              margin: const EdgeInsets.only(left: 16),
-                              child: const ListTile(
-                                leading: Icon(Icons.phone),
-                                title: Text(
-                                  "Phone Number:",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 5),
-                          if (phoneNumber != 'No Data')
-                            Container(
-                              margin: const EdgeInsets.only(left: 16),
-                              child: Text(
-                                phoneNumber,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 5),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.10,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 15),
+                          child: Column(
                             children: [
-                              Container(
-                                margin: const EdgeInsets.only(left: 16),
-                                child: const ListTile(
-                                  leading: Icon(Icons.mail),
-                                  title: Text(
-                                    "Email:",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              CircleAvatar(
+                                radius: 55,
+                                backgroundImage: NetworkImage(
+                                  userData['Pic'] ??
+                                      'assets/images/profile.png',
                                 ),
                               ),
                               const SizedBox(height: 5),
-                              Container(
-                                margin: const EdgeInsets.only(left: 16),
-                                child: Text(
-                                  email,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                  ),
+                              Text(
+                                '$fname $lname',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(left: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ListTile(
-                                  leading: Icon(Icons.star,
-                                      color: Color.fromRGBO(74, 74, 74, 1),
-                                      size: 25),
-                                  title: Text(
-                                    "Rating:",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                              const SizedBox(height: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 16),
+                                    child: ListTile(
+                                      leading: Icon(Icons.info),
+                                      title: Text(
+                                        "About",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        about,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Row(
-                                  children: List.generate(
-                                    roundedRating,
-                                    (index) =>
-                                        Icon(Icons.star, color: Colors.yellow),
+                                  const SizedBox(height: 5),
+                                  if (phoneNumber != 'No Data')
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 16),
+                                      child: const ListTile(
+                                        leading: Icon(Icons.phone),
+                                        title: Text(
+                                          "Phone Number:",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 5),
+                                  if (phoneNumber != 'No Data')
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 16),
+                                      child: Text(
+                                        phoneNumber,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 5),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 16),
+                                        child: const ListTile(
+                                          leading: Icon(Icons.mail),
+                                          title: Text(
+                                            "Email:",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 16),
+                                        child: Text(
+                                          email,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
                                   ),
+                                ],
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(left: 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ListTile(
+                                      leading: Icon(Icons.star,
+                                          color: Color.fromRGBO(74, 74, 74, 1),
+                                          size: 25),
+                                      title: Text(
+                                        "Rating:",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: List.generate(
+                                            rating
+                                                .floor(), // Get the integer part of the rating
+                                            (index) => Icon(Icons.star,
+                                                color: Colors.yellow),
+                                          ) +
+                                          List.generate(
+                                            (rating * 10 % 10)
+                                                .toInt(), // Get the decimal part of the rating
+                                            (index) => Icon(Icons.star_half,
+                                                color: Colors.yellow),
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -194,6 +204,16 @@ class _user_worker_infoState extends State<user_worker_info> {
             }
           },
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // Handle FloatingActionButton press
+          },
+          backgroundColor: const Color(0xFFBBA2BF),
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add_chart_rounded),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        drawer: Menu(scaffoldKey: _scaffoldKey),
       ),
     );
   }

@@ -70,7 +70,7 @@ class _EmailPageState extends State<EmailPage> {
                 Center(
                   child: Container(
                     width: 320,
-                    height: 315,
+                    height: 330,
                     decoration: BoxDecoration(
                       color: Color(0xFFF5F3F3),
                       borderRadius: BorderRadius.circular(20.0),

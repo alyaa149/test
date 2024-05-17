@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradd_proj/Domain/user_provider.dart';
 import 'package:gradd_proj/Pages/pagesUser/userinfo.dart';
+import 'package:gradd_proj/Pages/pagesWorker/workerInfo.dart';
 import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -61,10 +62,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             },
             child: StreamBuilder(
               stream: currentUser.currentUser != null
-                              ? FirebaseFirestore.instance
-                  .collection(isUser ? "users" : "workers")
-                  .doc(currentUser.currentUser!.uid)
-                  .snapshots() : null,
+                  ? FirebaseFirestore.instance
+                      .collection(isUser ? "users" : "workers")
+                      .doc(currentUser.currentUser!.uid)
+                      .snapshots()
+                  : null,
               builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator();
@@ -82,11 +84,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
                 return GestureDetector(
                   onTap: () {
-                    // Define navigation logic here
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => user_worker_info()),
-                    );
+                    if (isUser == true) {
+                      // Define navigation logic here
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => userinfo()),
+                      );
+                    } else{
+                          Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Workererinfo()));
+                    }
                   },
                   child: CircleAvatar(
                     radius: 20,
@@ -128,10 +136,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize {
     // if (showSearchBox && onSearchTextChanged != null) {
-      // return const Size.fromHeight(90.0);
+    // return const Size.fromHeight(90.0);
     // }
     //  else {
-      return const Size.fromHeight(60.0);
+    return const Size.fromHeight(60.0);
     // }
   }
 }

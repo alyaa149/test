@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gradd_proj/Domain/user_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../../Domain/customAppBar.dart';
 import 'editPost.dart';
@@ -171,26 +173,25 @@ class _CommentsPageState extends State<CommentsPage> {
 
   // Inside your _CommentsPageState class
   void _addComment() {
-    setState(() {
-      unreadCommentsCount++;
-    });
-    void _resetUnreadCommentsCount() {
-      setState(() {
-        unreadCommentsCount = 0;
-      });
-    }
+  setState(() {
+    unreadCommentsCount++;
+  });
 
-    String commentText = _commentController.text.trim();
-    if (commentText.isNotEmpty) {
-      // Get current user
-      User? user = FirebaseAuth.instance.currentUser;
+  String commentText = _commentController.text.trim();
+  if (commentText.isNotEmpty) {
+    // Get current user
+    final user = FirebaseAuth.instance.currentUser;
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    bool isUser = userProvider.isUser;
+    String collectionPath = isUser ? 'users' : 'workers';
 
-      if (user != null) {
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get()
-            .then((userData) {
+    if (user != null) {
+      FirebaseFirestore.instance
+          .collection(collectionPath)
+          .doc(user.uid)
+          .get()
+          .then((userData) {
+        if (userData.exists) {
           String firstName = userData['First Name'];
           String lastName = userData['Last Name'];
 
@@ -200,7 +201,6 @@ class _CommentsPageState extends State<CommentsPage> {
               {
                 'name': '$firstName $lastName',
                 'comment': commentText,
-                // 'timestamp': FieldValue.serverTimestamp(),
               }
             ])
           }).then((_) {
@@ -213,13 +213,16 @@ class _CommentsPageState extends State<CommentsPage> {
             // Handle error
             print('Failed to add comment: $error');
           });
-        }).catchError((error) {
-          // Handle error
-          print('Failed to get user data: $error');
-        });
-      }
+        } else {
+          print('User data not found');
+        }
+      }).catchError((error) {
+        // Handle error
+        print('Failed to get user data: $error');
+      });
     }
   }
+}
 
   void _createNotification(String commenterId, String postId,
       String commenterName, String commentText) {
