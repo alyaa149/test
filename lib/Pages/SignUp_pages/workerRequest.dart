@@ -251,7 +251,6 @@ class _WorkerRequestState extends State<WorkerRequest> {
         'Reference Number': refNumber,
         'National-ID Pic': nationalUrl,
         'Feesh Pic': feeshUrl,
-        'isDeleted':false
       });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
