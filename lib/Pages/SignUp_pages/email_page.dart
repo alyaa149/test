@@ -16,7 +16,10 @@ class EmailPage extends StatefulWidget {
   final bool isUser;
   final File? imageFile;
   EmailPage(
-      {required this.firstName, required this.lastName, required this.isUser, required this.imageFile});
+      {required this.firstName,
+      required this.lastName,
+      required this.isUser,
+      required this.imageFile});
 
   @override
   _EmailPageState createState() => _EmailPageState();
@@ -26,7 +29,6 @@ class _EmailPageState extends State<EmailPage> {
   String email = '';
   final _formKey = GlobalKey<FormState>(); // Define form key
   bool signUpWithEmail = true; // Default sign-up method is with email
-  
 
   @override
   Widget build(BuildContext context) {
@@ -155,8 +157,7 @@ class _EmailPageState extends State<EmailPage> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) =>
-                                                PasswordPage(
+                                            builder: (context) => PasswordPage(
                                               firstName: widget.firstName,
                                               lastName: widget.lastName,
                                               email: phoneNumberWithEmail,
@@ -183,25 +184,25 @@ class _EmailPageState extends State<EmailPage> {
                                   height: 10,
                                 ),
                                 GestureDetector(
-  onTap: () {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => isUser ? Login() : LoginWorker(),
-      ),
-    );
-  },
-  child: Text(
-    'Already have an account? ${isUser ? 'Login' : 'Login as Worker'}',
-    style: TextStyle(
-      fontFamily: "Raleway",
-      fontSize: 15,
-      fontWeight: FontWeight.bold,
-      decoration: TextDecoration.underline,
-    ),
-  ),
-),
-
+                                  onTap: () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            isUser ? Login() : LoginWorker(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Already have an account? ${isUser ? 'Login' : 'Login as Worker'}',
+                                    style: TextStyle(
+                                      fontFamily: "Raleway",
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
                                 SizedBox(
                                   height: 5,
                                 ),
@@ -215,11 +216,12 @@ class _EmailPageState extends State<EmailPage> {
                                     signUpWithEmail
                                         ? 'Or Sign up with phone number'
                                         : 'Or Sign up with email',
-                                        style: TextStyle(      fontFamily: "Raleway",
-      fontSize: 15,
-      fontWeight: FontWeight.bold,
-      decoration: TextDecoration.underline,)
-                                        ,
+                                    style: TextStyle(
+                                      fontFamily: "Raleway",
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
                                   ),
                                 ),
                               ],

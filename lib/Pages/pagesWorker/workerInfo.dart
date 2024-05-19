@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -43,8 +44,8 @@ class _WorkererinfoState extends State<Workererinfo> {
                 final lname = userData['Last Name'] ?? '';
                 final email = userData['email'] ?? 'No Data';
                 final phoneNumber = userData['PhoneNumber'] ?? 'No Data';
-                final about = userData['about'] ?? 'No Data';
-                final rating = userData['Rating'] ?? 0;
+                final about = userData['Type'] ?? 'No Data';
+                final rating = userData['Rating'] ?? 0 as double;
                 final ProfilePhotoURL = userData['Pic'];
 
                 return SizedBox(
@@ -172,12 +173,24 @@ class _WorkererinfoState extends State<Workererinfo> {
                                         ),
                                       ),
                                     ),
-                                    Row(
-                                      children: List.generate(
-                                        rating,
-                                        (index) => Icon(Icons.star, color: Colors.yellow),
-                                      ),
-                                    ),
+                                      RatingBar.builder(
+                    initialRating: rating as double? ?? 0.0,
+                    minRating: 1,
+                    maxRating: 5,
+                    direction: Axis.horizontal,
+                    allowHalfRating: true,
+                    unratedColor: Colors.grey,
+                    itemCount: 5,
+                    itemSize: 25.0,
+                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                    itemBuilder: (context, _) => Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    ignoreGestures: true,
+                    onRatingUpdate: (rating) => print(rating),
+                  ),
+                
                                   ],
                                 ),
                               ),

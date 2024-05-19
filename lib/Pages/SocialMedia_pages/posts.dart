@@ -236,14 +236,14 @@ class _PostsState extends State<Posts> {
                                                   post['description'] ?? '');
                                             },
                                           ),
-                                        ],
-                                      ),
-                                      IconButton(
+                                          IconButton(
                                         icon: Icon(Icons.delete,
                                             size: 20, color: Colors.red),
                                         onPressed: () {
                                           deletePost(post['postId'] ?? '');
                                         },
+                                      ),
+                                        ],
                                       ),
                                     ],
                                   ),

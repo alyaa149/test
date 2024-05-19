@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gradd_proj/Domain/bottom.dart';
 import 'package:gradd_proj/Pages/SignUp_pages/username_page.dart';
 import 'package:gradd_proj/Pages/pagesUser/signup.dart';
+import 'package:gradd_proj/Pages/tired.dart';
 import 'BNavBarPages/home.dart';
 
 class Login extends StatefulWidget {
