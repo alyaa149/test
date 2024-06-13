@@ -58,13 +58,13 @@ class _UserAdminChatState extends State<UserAdminChat> {
         final imageUrl = await ref.getDownloadURL();
         await _userMessagesCollection.add({
           'AUmessage': imageUrl,
-          'sender': 'Admin',
+          'sender': 'User',
           'timestamp': FieldValue.serverTimestamp(),
     
         });
         await _adminMessagesCollection.add({
           'AUmessage': imageUrl,
-          'sender': 'Admin',
+          'sender': 'User',
           'timestamp': FieldValue.serverTimestamp(),
           'userId':  FirebaseAuth.instance.currentUser!.uid,
         });

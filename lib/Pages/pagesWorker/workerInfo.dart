@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,8 +26,11 @@ class _WorkererinfoState extends State<Workererinfo> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-         key: _scaffoldKey,
-        appBar: CustomAppBar(scaffoldKey: _scaffoldKey, showSearchBox: false,),
+        key: _scaffoldKey,
+        appBar: CustomAppBar(
+          scaffoldKey: _scaffoldKey,
+          showSearchBox: false,
+        ),
         body: FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance
               .collection('workers')
@@ -62,12 +67,12 @@ class _WorkererinfoState extends State<Workererinfo> {
                           child: Column(
                             children: [
                               CircleAvatar(
-                              radius: 55,
-                              backgroundImage: NetworkImage(
-                                userData['Pic'] ??
-                                    'assets/images/profile.png',
+                                radius: 55,
+                                backgroundImage: NetworkImage(
+                                  userData['Pic'] ??
+                                      'assets/images/profile.png',
+                                ),
                               ),
-                            ),
                               const SizedBox(height: 5),
                               Text(
                                 '$fname $lname',
@@ -125,12 +130,15 @@ class _WorkererinfoState extends State<Workererinfo> {
                                       ),
                                     ),
                                   const SizedBox(height: 5),
-                                  if (email != '$phoneNumber@domain.com') // Add this condition
+                                  if (email !=
+                                      '$phoneNumber@domain.com') // Add this condition
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Container(
-                                          margin: const EdgeInsets.only(left: 16),
+                                          margin:
+                                              const EdgeInsets.only(left: 16),
                                           child: const ListTile(
                                             leading: Icon(Icons.mail),
                                             title: Text(
@@ -143,7 +151,8 @@ class _WorkererinfoState extends State<Workererinfo> {
                                         ),
                                         const SizedBox(height: 5),
                                         Container(
-                                          margin: const EdgeInsets.only(left: 16),
+                                          margin:
+                                              const EdgeInsets.only(left: 16),
                                           child: Text(
                                             email,
                                             style: const TextStyle(
@@ -173,24 +182,24 @@ class _WorkererinfoState extends State<Workererinfo> {
                                         ),
                                       ),
                                     ),
-                                      RatingBar.builder(
-                    initialRating: rating as double? ?? 0.0,
-                    minRating: 1,
-                    maxRating: 5,
-                    direction: Axis.horizontal,
-                    allowHalfRating: true,
-                    unratedColor: Colors.grey,
-                    itemCount: 5,
-                    itemSize: 25.0,
-                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                    itemBuilder: (context, _) => Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                    ),
-                    ignoreGestures: true,
-                    onRatingUpdate: (rating) => print(rating),
-                  ),
-                
+                                    RatingBar.builder(
+                                      initialRating: rating as double? ?? 0.0,
+                                      minRating: 1,
+                                      maxRating: 5,
+                                      direction: Axis.horizontal,
+                                      allowHalfRating: true,
+                                      unratedColor: Colors.grey,
+                                      itemCount: 5,
+                                      itemSize: 25.0,
+                                      itemPadding:
+                                          EdgeInsets.symmetric(horizontal: 1.0),
+                                      itemBuilder: (context, _) => Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                      ),
+                                      ignoreGestures: true,
+                                      onRatingUpdate: (rating) => print(rating),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -204,10 +213,14 @@ class _WorkererinfoState extends State<Workererinfo> {
                           InkWell(
                             onTap: () {
                               // Handle tap on the message icon
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminChat()));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AdminChat()));
                             },
                             child: Container(
-                              margin: const EdgeInsets.only(left: 16), // Increased the left margin
+                              margin: const EdgeInsets.only(
+                                  left: 16), // Increased the left margin
                               child: const Tooltip(
                                 message: "Admin Chat",
                                 child: ListTile(
@@ -231,7 +244,8 @@ class _WorkererinfoState extends State<Workererinfo> {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) =>  HistoryWorker()),
+                                  MaterialPageRoute(
+                                      builder: (context) => HistoryWorker()),
                                 );
                                 // Add your logic for the "Show Orders" button here
                               },
